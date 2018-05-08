@@ -3,4 +3,4 @@
 
 ### Web-frontend
 - Geon-wooBryanKim (https://github.com/Geon-wooBryanKim)
-- jwgo https://github.com/jwgo)
+- jwgo (https://github.com/jwgo)
