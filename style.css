@@ -1,0 +1,357 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700");
+a,
+abbr,
+acronym,
+address,
+applet,
+article,
+aside,
+audio,
+b,
+big,
+blockquote,
+body,
+canvas,
+caption,
+center,
+cite,
+code,
+dd,
+del,
+details,
+dfn,
+div,
+dl,
+dt,
+em,
+embed,
+fieldset,
+figcaption,
+figure,
+footer,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+header,
+hgroup,
+html,
+i,
+iframe,
+img,
+ins,
+kbd,
+label,
+legend,
+li,
+mark,
+menu,
+nav,
+object,
+ol,
+output,
+p,
+pre,
+q,
+ruby,
+s,
+samp,
+section,
+small,
+span,
+strike,
+strong,
+sub,
+summary,
+sup,
+table,
+tbody,
+td,
+tfoot,
+th,
+thead,
+time,
+tr,
+tt,
+u,
+ul,
+var,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline
+}
+* {
+  box-sizing: border-box
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #F4F6F9
+}
+
+ul {
+  list-style: none;
+}
+img {
+  width: 100%;
+}
+
+.container {
+  margin: 0 15px 0 15px;
+}
+header {
+  border-bottom: 1px #ccc solid;
+  padding: 15px 0  15px 0;
+  text-align: center;
+}
+input[type=text] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 15px 0 15px 0;
+  padding: 10px 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid #cccccc;
+}
+.content {
+  border: 1px solid #ccc;
+}
+.content .result li{
+  border-bottom: 1px #ccc solid;
+}
+.content .result li:last-child {
+  border-bottom: none;
+}
+.content .result li:hover {
+  border-left: 5px solid hotpink;
+  transition: all 0.3s ease-in-out;
+}
+.content .user-area {
+  padding: 5px;
+}
+.content .user-area>img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  position: relative;
+  top: 2px;
+}
+.content .user-area>span {
+  font-size: 0.8em;
+  position: relative;
+  top: -6px;
+}
+.content .track-area {
+  background: #F4F6F9;
+  padding: 5px;
+}
+.content .track-area .player {
+  display: inline-block;
+  position: relative;
+  width: 33.33333%;
+  max-width: 1200px;
+}
+.content .track-area .player>img {
+  width: 100%;
+  height: 100%;
+}
+.content .track-area .player a {
+  font-size:40px
+}
+.content .track-area .player .fas {
+  color: hotpink;
+}
+.content .track-area .player .btns {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+}
+.content .track-info {
+  display: inline-block;
+  position: absolute;
+  width: 60%;
+  max-width: 1200px;
+}
+.content .track-info .info {
+  padding: 5px;
+}
+.content .track-info .info .artist {
+  font-weight: 300;
+  color: gray;
+  font-size: 0.9rem;
+}
+.content .track-info .info .title {
+  font-size: 0.8rem;
+  color: #1b1b1b;
+}
+.content .track-info .count {
+  padding: 8px;
+  font-size: 0.8rem;
+  font-weight: 300;
+}
+.content .track-info .count .fas{
+  font-size: 10px;
+  margin-right: 0px 5px 0px 5px;
+}
+ul.tabs {
+  display: flex;
+}
+.tabs li {
+  display: inline-block;
+  margin: 5px;
+  width: 50%;
+  padding: 15px;
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 5px;
+  background-color: #eee;
+  color: #999;
+}
+.tabs li.active {
+  background-color: hotpink;
+  color: #fff;
+}
+.list li {
+  box-sizing: border-box;
+  display: block;
+  padding: 25px;
+  border-bottom: 1px solid #ccc;
+  position: relative;
+}
+.list li:last-child {
+  border-bottom: none;
+}
+.list li .number{
+  margin-right: 15px;
+  color: #ccc;
+}
+.list li .date{
+  position: absolute;
+  right: 10px;
+  top: 25px;
+  margin-right: 15px;
+  color: #ccc;
+  font-size: 0.8rem;
+}
+form {
+  position: relative;
+}
+.btn-reset,
+.btn-remove {
+  border-radius: 50%;
+  background-color: #ccc;
+  color: white;
+  border: none;
+  padding: 2px 5px;
+}
+.btn-reset {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+}
+.btn-reset::before,
+.btn-remove::before {
+  content: 'X'
+}
+
+#search-result li {
+  display: flex;
+  margin-bottom: 15px;
+}
+#search-result img {
+  width: 30%;
+  height: 30%;
+}
+
+.player-area {
+  background: url('https://i1.sndcdn.com/artworks-000179057945-14v79p-t500x500.jpg') no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100%;
+  position: fixed;
+}
+.player-area .header {
+  padding: 10px;
+}
+.player-area .header div{
+  display: inline-block;
+  width: 50%;
+  float: left;
+}
+.player-area .header .btn-left {
+  font-size: 30px;
+  color: #1b1b1b;
+  float: left;
+}
+.player-area .header .btn-right {
+  font-size: 3-px;
+  color: #1b1b1b;
+  float: right;
+}
+section.body .img {
+  width: 90%;
+  height: 90%;
+  margin: 0 auto;
+}
+section.body .album {
+  width: 100%;
+  text-align: center;
+  padding: 10px;
+}
+section.body .album .title {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+section.body .album .artist {
+  color:gray;
+  font-size: 0.8rem;
+}
+
+section.body .main-player{
+  width: 100%;
+  text-align: center;
+  font-size: 40px;
+  color: #1b1b1b;
+}
+section.body .main-player .player-btn {
+  margin: 10px;
+}
+section.body .main-player .player-btn>.prev {
+  padding-right: 20px;
+}
+section.body .main-player .player-btn>.next{
+  padding-left: 20px;
+}
+section.body .main-player .timeline {
+  width: 100%;
+  padding: 30px;
+}
+#timeline{
+  width: 90%;
+  max-width: 1200px;
+  height: 5px;
+  border-radius: 15px;
+  background: rgba(0,0,0,.3);
+  margin: 0 auto;
+}
+#playhead{
+  position: relative;
+  top: -5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0,1);
+
+}
