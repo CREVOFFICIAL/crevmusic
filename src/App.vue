@@ -4,20 +4,26 @@
     <h2 class="container">CREV MUSIC</h2>
   </header>
   <div class="container">
-    <search-form v-bind:value="query" v-on:@submit="onSubmit"
-          v-on:@reset="onReset"></search-form>
+    <search-form></search-form>
   </div>
   <div class="content">
     <div v-if="submitted">
-      <search-result v-bind:resultData="searchResult" v-bind:query="query" v-on:@clickList="onClickList"></search-result>
+      <search-result-list></search-result-list>
+      <div v-if="showAddListButton">
+        <div class="list-btn-area">
+          <a class="btn" @click="onClickAddListButton">리스트 추가</a>
+        </div>
+      </div>
+      <player-modal v-if="showPlayerModal !== null"></player-modal>
+      <add-list-modal v-if="showAddListModal"></add-list-modal>
     </div>
     <div v-else>
-      <tabs v-bind:tabs="tabs" v-bind:selected-tab="selectedTab" v-on:@change="onClickTab"></tabs>
-      <div v-if="selectedTab === tabs[0]">
-        <list v-bind:listData="recommend" type="recommend"></list>
+      <tabs v-bind:selectedTab="selectedTab"></tabs>
+      <div v-if="selectedTab === '추천 리스트'">
+        <recommend-list></recommend-list>
       </div>
       <div v-else>
-        <list v-bind:listData="own" type="own"></list>
+        <!-- <list v-bind:listData="own" type="own"></list> -->
       </div>
     </div>
   </div>
@@ -26,79 +32,34 @@
 
 <script>
 import FormComponent from './components/FormComponent.vue';
-import ResultComponent from './components/ResultComponent.vue';
+import SearchResultListComponent from './components/SearchResultListComponent.vue';
 import TabComponent from './components/TabComponent.vue';
-import ListComponent from './components/ListComponent.vue';
+import RecommendListComponent from './components/RecommendListComponent.vue';
+import PlayerModalComponent from './components/PlayerModalComponent.vue';
+import AddListModalComponent from './components/AddSearchResultListModalComponent.vue'
 
-import SearchModel from '../models/SearchModel.js';
-import ListModel from '../models/ListModel.js';
+import { mapState } from 'vuex';
 
 export default {
   name: 'app',
-  data () {
-    return {
-      query: '',
-      submitted: false,
-      tabs: ['추천 리스트', '나의 리스트'],
-      selectedTab: '',
-      recommend: [],
-      own: [],
-      searchResult: [],
-      selectedList: []
-    };
-  },
-  created() {
-    this.selectedTab = this.tabs[0];
-    this.fetchRecommend();
-  },
+  computed: mapState({
+    submitted: state => state.submitted,
+    showAddListButton: state => state.selectedSearchResultItem.length,
+    selectedTab: state => state.selectedTab,
+    showPlayerModal: state => state.playerModalDataIndex,
+    showAddListModal: state => state.showAddList
+  }),
   components: {
     'search-form': FormComponent,
-    'search-result': ResultComponent,
+    'search-result-list': SearchResultListComponent,
     'tabs': TabComponent,
-    'list': ListComponent
+    'recommend-list': RecommendListComponent,
+    'player-modal': PlayerModalComponent,
+    'add-list-modal': AddListModalComponent
   },
   methods: {
-    onSubmit(query) {
-      this.query = query;
-      this.search();
-    },
-    onReset(e) {
-      this.resetForm();
-    },
-    onClickTab(tab) {
-      this.selectedTab = tab;
-    },
-    onClickList(id) {
-      this.find(id);
-    },
-    search() {
-      SearchModel.list().then(data => {
-        this.submitted = true;
-        this.searchResult = data;
-      });
-    },
-    find(id) {
-      this.searchResult.forEach(function(item) {
-        if(item.id === id) {
-          this.selectedList.push({
-            count: item.count,
-            id: item.id,
-            track: item.track,
-            user: item.user
-          });
-        }
-      });
-      console.log(this.selectedList);
-    },
-    resetForm() {
-      this.query = '';
-      this.submitted = false;
-      this.searchResult = [];
-    },
-    fetchRecommend() {
-      ListModel.list().then(data => {
-        this.recommend = data;
-      });
+    onClickAddListButton: function() {
+      this.$store.commit('onClickAddListButton');
     }
   }
 };

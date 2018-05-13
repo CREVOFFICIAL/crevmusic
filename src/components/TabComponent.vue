@@ -1,24 +1,22 @@
 <template>
   <ul class="tabs">
-    <li v-for="tab in tabs" :key="tab" v-bind:class="{active: tab === selectedTab}"
-    v-on:click="onClickTab(tab)">
+    <li v-for="tab in tabList" :key="tab" v-bind:class="{active: tab === selectedTab}"
+    @click="onClickTab(tab)">
       {{tab}}
     </li>
   </ul>
 </template>
 <script>
-const tag = '[TabComponent]';
-export default {
-  props: ['tabs', 'selected-tab'],
-  data() {
-    return {
+import { mapState } from 'vuex';
 
-    }
-  },
+export default {
+  props: ['selectedTab'],
+  computed: mapState({
+    tabList: state => state.tabList
+  }),
   methods: {
-    onClickTab(tab) {
-      console.log(tag, 'onClickTab()', tab);
-      this.$emit('@change', tab);
+    onClickTab(tabName) {
+      this.$store.commit('onClickTab', tabName);
     }
   }
 }

@@ -1,33 +1,25 @@
 <template>
-  <form v-on:submit.prevent="onSubmit">
-    <input type="text" v-model="inputValue" v-on:keyup="onKeyup" placeholder="검색어를 입력하세요" autofocus>
-    <button v-show="inputValue.length" v-on:click="onReset" type="reset" class="btn-reset"></button>
+  <form @submit.prevent="requestSearchData">
+    <input type="text" :value="this.query" @input="updateQuery" placeholder="검색어를 입력하세요" autofocus>
+    <button v-show="this.query.length" @click="onReset" type="reset" class="btn-reset"></button>
   </form>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 export default {
-  props: ['value'],
-  data() {
-    return {
-      inputValue: this.value
-    }
-  },
-  watch: {
-    value(newVal, oldVal) {
-      this.inputValue = newVal
-    }
-  },
+  computed: mapState({
+    query: state => state.query
+  }),
   methods: {
-    onSubmit() {
-      this.$emit('@submit', this.inputValue.trim())
+    updateQuery(ev) {
+      this.$store.commit('updateQuery', ev.target.value);
     },
-    onKeyup() {
-      if (!this.inputValue.length) this.onReset()
+    requestSearchData() {
+      this.$store.dispatch('requestSearchData');
     },
     onReset() {
-      this.inputValue = ''
-      this.$emit('@reset')
+      this.$store.commit('onReset');
     }
   }
 }
