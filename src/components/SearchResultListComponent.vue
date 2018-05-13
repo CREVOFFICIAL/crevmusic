@@ -1,8 +1,7 @@
 <template>
-  <div v-if="resultData.length" class="result">
+  <div v-if="searchResult.length" class="result">
     <ul>
-      <!-- :key="item.id"의 차이는..? -->
-      <li v-for="item in resultData" :key="item.id" v-on:click="onClickList(item.id)">
+      <li v-for="(item, index) in searchResult" :key="index" @click="onClickList(item, $event)">
         <div class="list-area">
           <div class="user-area">
             <img v-bind:src="item.user.avatar_url">
@@ -12,7 +11,7 @@
             <div class="player">
             <img v-bind:src="item.track.avatar_url">
             <div class="btns">
-              <a href="#"><i class="fas fa-play-circle"></i></a>
+              <a @click.stop="onClickPlayerModal(index)"><i class="fas fa-play-circle"></i></a>
             </div>
             </div>
             <div class="track-info">
@@ -36,17 +35,21 @@
   </div>
 </template>
 <script>
-const tag = '[ResultComponent]';
+import { mapState } from 'vuex';
+import { findClosestParentWithClass, toggleClassList } from '../utils/domUtils.js';
+
 export default {
-  props: ['resultData', 'query'],
-  data() {
-    return {
-    }
-  },
+  computed: mapState({
+    searchResult: state => state.searchResult
+  }),
   methods: {
-    onClickList(id) {
-      console.log(tag, 'onClickList()', id);
-      this.$emit('@clickList', id);
+    onClickList: function (item, ev) {
+      var targetEl = findClosestParentWithClass(ev.target, 'list-area');
+      toggleClassList(targetEl, 'selected');
+      this.$store.commit('selectedList', item);
+    },
+    onClickPlayerModal: function (index) {
+      this.$store.commit('updatePlayerModalIndex', index);
     }
   }
 }
