@@ -6,20 +6,22 @@
 
           <div class="modal-header">
             <slot name="header">
-              <img v-bind:src="data.track.avatar_url">
-              <span>{{data.track.username}}</span>
+              <img v-bind:src="data.artwork_url">
+              <span>{{data.user.username}}</span>
             </slot>
           </div>
 
           <div class="modal-body">
             <slot name="body">
-              {{data.track.title}}
+              {{data.title}}
             </slot>
           </div>
 
           <div class="modal-footer">
             <slot name="footer">
-              progress bar
+              <audio ref="player" controls>
+                <source v-bind:src="url">
+            </audio>
               <button class="modal-default-button" @click="onClose">
                 닫기
               </button>
@@ -33,8 +35,21 @@
 
 <script>
 import { mapGetters } from 'vuex'
-
+import axios from 'axios';
 export default {
+  data() {
+    return {
+      url: this.$store.state.playerModalDataURL
+    };
+  },
+  created() {
+    this.$store.dispatch('getPreviewURL');
+  },
+  mounted() {
+    this.$watch('url', () => {
+        this.$refs.player.load()
+    });
+  },
   computed: mapGetters({
     data: 'getPlayerModalData'
   }),

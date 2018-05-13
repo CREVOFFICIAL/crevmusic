@@ -11,7 +11,7 @@
             <div class="player">
             <img v-bind:src="item.user.avatar_url">
             <div class="btns">
-              <a @click.stop="onClickPlayerModal(index)"><i class="fas fa-play-circle"></i></a>
+              <a @click.stop="onClickPlayerModal(index, item.id)"><i class="fas fa-play-circle"></i></a>
             </div>
             </div>
             <div class="track-info">
@@ -48,8 +48,8 @@ export default {
       toggleClassList(targetEl, 'selected');
       this.$store.commit('selectedList', item);
     },
-    onClickPlayerModal: function (index) {
-      this.$store.commit('updatePlayerModalIndex', index);
+    onClickPlayerModal: function (index, id) {
+      this.$store.commit('ClickedPlayerModal', {index, id});
     }
   }
 }

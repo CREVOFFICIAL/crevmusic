@@ -13,6 +13,8 @@ export default new Vuex.Store({
     searchResult: [],
     selectedSearchResultItem: [],
     playerModalDataIndex: null,
+    playerModalDataId: '',
+    playerModalDataURL: null,
     showAddList: false,
     listData: [],
     tabList: ['추천 리스트', '나의 리스트'],
@@ -21,7 +23,7 @@ export default new Vuex.Store({
   },
   getters:{
     getPlayerModalData: state => {
-      return SearchResultModel.find(state.playerModalDataIndex);
+      return state.searchResult.find((item, i) => i === state.playerModalDataIndex);
     }
   },
   actions: {
@@ -33,6 +35,12 @@ export default new Vuex.Store({
     requestRecommendData: ({commit}) => {
       ListModel.list().then(data => {
         commit('responeRecommendResult', data);
+      });
+    },
+    getPreviewURL: ({commit, state}) => {
+      axios.get(`https://api.soundcloud.com/i1/tracks/${state.playerModalDataId}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+      .then((response) => {
+        commit('changePlayerModalData', response.data.preview_mp3_128_url);
       });
     }
   },
@@ -65,11 +73,15 @@ export default new Vuex.Store({
     onClickTab: (state, tabName) => {
       state.selectedTab = tabName;
     },
-    updatePlayerModalIndex: (state, index) => {
+    ClickedPlayerModal: (state, {index, id}) => {
       state.playerModalDataIndex = index;
+      state.playerModalDataId = id;
     },
     onClickAddListButton: (state) => {
       state.showAddList = true;
+    },
+    changePlayerModalData: (state, url) => {
+      state.playerModalDataURL = url;
     }
   }
 });
