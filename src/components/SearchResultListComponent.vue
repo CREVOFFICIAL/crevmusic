@@ -4,25 +4,25 @@
       <li v-for="(item, index) in searchResult" :key="index" @click="onClickList(item, $event)">
         <div class="list-area">
           <div class="user-area">
-            <img v-bind:src="item.user.avatar_url">
+            <img v-bind:src="item.artwork_url">
             <span>{{item.user.username}}</span>
           </div>
           <div class="track-area">
             <div class="player">
-            <img v-bind:src="item.track.avatar_url">
+            <img v-bind:src="item.user.avatar_url">
             <div class="btns">
               <a @click.stop="onClickPlayerModal(index)"><i class="fas fa-play-circle"></i></a>
             </div>
             </div>
             <div class="track-info">
                 <div class="info">
-                  <p class="artist">{{item.track.username}}</p>
-                  <p class="title">{{item.track.title}}</p>
+                  <p class="artist">{{item.user.username}}</p>
+                  <p class="title">{{item.title}}</p>
                 </div>
               <div class="count">
-                  <span><i class="fas fa-play"></i> {{item.count.playback}}</span>
-                  <span><i class="fas fa-heart"></i> {{item.count.favoritings}}</span>
-                  <span><i class="fas fa-redo-alt"></i> {{item.count.comment}}</span>
+                  <span><i class="fas fa-play"></i> {{item.playback_count}}</span>
+                  <span><i class="fas fa-heart"></i> {{item.likes_count}}</span>
+                  <span><i class="fas fa-redo-alt"></i> {{item.comment_count}}</span>
                 </div>
             </div>
           </div>

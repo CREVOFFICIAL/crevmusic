@@ -5,7 +5,7 @@ import SearchResultModel from '../models/SearchResultModel.js';
 import ListModel from '../models/ListModel.js';
 
 Vue.use(Vuex);
-const URL = "http://api.soundcloud.com/tracks/?client_id=1dff55bf515582dc759594dac5ba46e9&q=";
+const URL = "http://api.soundcloud.com/tracks/?client_id=1dff55bf515582dc759594dac5ba46e9&limit=100&q=";
 export default new Vuex.Store({
   state: {
     query: '',
