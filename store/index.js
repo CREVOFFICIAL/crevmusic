@@ -1,11 +1,11 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-
+import axios from 'axios';
 import SearchResultModel from '../models/SearchResultModel.js';
 import ListModel from '../models/ListModel.js';
 
 Vue.use(Vuex);
-
+const URL = "http://api.soundcloud.com/tracks/?client_id=1dff55bf515582dc759594dac5ba46e9&q=";
 export default new Vuex.Store({
   state: {
     query: '',
@@ -16,7 +16,8 @@ export default new Vuex.Store({
     showAddList: false,
     listData: [],
     tabList: ['추천 리스트', '나의 리스트'],
-    selectedTab: '추천 리스트'
+    selectedTab: '추천 리스트',
+    tracks: {},
   },
   getters:{
     getPlayerModalData: state => {
@@ -24,9 +25,9 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    requestSearchData: ({commit}) => {
-      SearchResultModel.list().then(data => {
-        commit('responeSubmitData', data);
+    requestSearchData: ({commit, state}) => {
+      axios.get(URL + state.query).then((response) => {
+        commit('responeSubmitData', response.data);
       });
     },
     requestRecommendData: ({commit}) => {
