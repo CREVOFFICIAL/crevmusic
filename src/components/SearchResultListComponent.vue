@@ -49,7 +49,7 @@ export default {
       this.$store.commit('selectedList', item);
     },
     onClickPlayerModal: function (index, id) {
-      this.$store.commit('ClickedPlayerModal', {index, id});
+      this.$store.commit('clickedPlayerModal', {index, id});
     }
   }
 }

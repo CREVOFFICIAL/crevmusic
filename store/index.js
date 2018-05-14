@@ -20,6 +20,15 @@ export default new Vuex.Store({
     tabList: ['추천 리스트', '나의 리스트'],
     selectedTab: '추천 리스트',
     tracks: {},
+    player: {
+      audio: null,
+      duration: null,
+      playButton: null,
+      playHead: null,
+      timeline: null,
+      timelineWidth: null,
+      timelinePosition: null
+    }
   },
   getters:{
     getPlayerModalData: state => {
@@ -42,6 +51,24 @@ export default new Vuex.Store({
       .then((response) => {
         commit('changePlayerModalData', response.data.preview_mp3_128_url);
       });
+    },
+    onClickTimeline: ({commit, state} , ev) => {
+      commit('getTimelinePosition');
+
+      let newMargLeft = ev.clientX - state.player.timelinePosition;
+
+      if (newMargLeft >= 0 && newMargLeft <= state.player.timelineWidth) {
+        commit('updatePlayHeadStyle', newMargLeft);
+      }
+      if (newMargLeft < 0) {
+        commit('updatePlayHeadStyle', 0);
+      }
+      if (newMargLeft > state.player.timelineWidth) {
+        commit('updatePlayHeadStyle', state.player.timelineWidth);
+      }
+
+      let percent = newMargLeft / state.player.timelineWidth;
+      commit('updateCurrentTime', percent);
     }
   },
   mutations: {
@@ -73,7 +100,7 @@ export default new Vuex.Store({
     onClickTab: (state, tabName) => {
       state.selectedTab = tabName;
     },
-    ClickedPlayerModal: (state, {index, id}) => {
+    clickedPlayerModal: (state, {index, id}) => {
       state.playerModalDataIndex = index;
       state.playerModalDataId = id;
     },
@@ -82,6 +109,47 @@ export default new Vuex.Store({
     },
     changePlayerModalData: (state, url) => {
       state.playerModalDataURL = url;
+    },
+    updatePlayerObject: (state, refs) => {
+      state.player.audio = refs.player;
+      state.player.playButton = refs.playButton;
+      state.player.playHead = refs.playHead;
+      state.player.timeline = refs.timeline;
+      state.player.timelineWidth = state.player.timeline.offsetWidth - state.player.playHead.offsetWidth;
+    },
+    onClickPlayButton: (state) => {
+      // start audio
+      if (state.player.audio.paused) {
+        state.player.audio.play();
+        // remove play, add pause
+        state.player.playButton.classList.remove('play');
+        state.player.playButton.classList.add('pause');
+      } else { // pause audio
+        state.player.audio.pause();
+        // remove pause, add play
+        state.player.playButton.classList.add('play');
+        state.player.playButton.classList.remove('pause');
+      }
+    },
+    timeUpdate: (state) => {
+      let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
+      state.player.playHead.style.marginLeft = playPercent + "px";
+      if (state.player.audio.currentTime == state.player.duration) {
+        state.player.playButton.className = "";
+        state.player.playButton.className = "play";
+      }
+    },
+    canplayHhrough: (state) => {
+      state.player.duration = state.player.audio.duration;
+    },
+    getTimelinePosition: (state) => {
+      state.player.timelinePosition = state.player.timeline.getBoundingClientRect().left;
+    },
+    updatePlayHeadStyle: (state, marginValue) => {
+      state.player.playHead.style.marginLeft = marginValue + "px";
+    },
+    updateCurrentTime: (state, percent) => {
+      state.player.audio.currentTime = state.player.duration * percent;
     }
   }
 });

@@ -14,14 +14,23 @@
           <div class="modal-body">
             <slot name="body">
               {{data.title}}
+              <audio ref="player" autoplay @timeupdate="timeUpdate" @canplaythrough="canplayHhrough">
+                <source v-bind:src="url">
+            </audio>
+            	<div id="wrapper">
+              <!--Audio Player Interface-->
+              <div class="audioplayer">
+                <button class="play" ref="playButton" @click="onClickPlayButton"></button>
+                <div class="timeline" ref="timeline" @click="onClickTimeline($event)">
+                  <div class="play-head" ref="playHead"></div>
+                </div>
+              </div>
+            </div>
             </slot>
           </div>
 
           <div class="modal-footer">
             <slot name="footer">
-              <audio ref="player" controls>
-                <source v-bind:src="url">
-            </audio>
               <button class="modal-default-button" @click="onClose">
                 닫기
               </button>
@@ -34,14 +43,9 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import axios from 'axios';
+import { mapGetters } from 'vuex';
+
 export default {
-  data() {
-    return {
-      url: this.$store.state.playerModalDataURL
-    };
-  },
   created() {
     this.$store.dispatch('getPreviewURL');
   },
@@ -49,13 +53,31 @@ export default {
     this.$watch('url', () => {
         this.$refs.player.load()
     });
+    this.$store.commit('updatePlayerObject', this.$refs);
   },
-  computed: mapGetters({
-    data: 'getPlayerModalData'
-  }),
+  computed:{
+    data() {
+      return this.$store.getters.getPlayerModalData;
+    },
+    url() {
+      return this.$store.state.playerModalDataURL;
+    }
+  },
   methods: {
     onClose: function () {
       this.$store.commit('onClose');
+    },
+    onClickPlayButton: function () {
+      this.$store.commit('onClickPlayButton');
+    },
+    onClickTimeline: function(ev) {
+      this.$store.dispatch('onClickTimeline', ev);
+    },
+    timeUpdate: function () {
+      this.$store.commit('timeUpdate');
+    },
+    canplayHhrough: function () {
+      this.$store.commit('canplayHhrough');
     }
   }
 }
@@ -86,5 +108,40 @@ export default {
   border: none;
   border-radius: 5px;
   padding: 5px
+}
+.timeline{
+  width: 80%;
+  max-width: 1000px;
+  height: 5px;
+	background: rgba(0,0,0,.3);
+	margin-top: 20px;
+	float: left;
+	border-radius: 15px;
+}
+/*Grabable Playhead*/
+.play-head{
+	cursor: pointer;
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	margin-top: -5px;
+	background: hotpink;
+}
+.audioplayer{
+  width: 100%;
+}
+/* Play/Pause Button */
+.play{
+	/* height:60px;
+	width: 60px;
+	border: none;
+	background-size: 50% 50%;
+	background-repeat: no-repeat;
+	background-position: center;
+	float:left;
+	outline:none; */
+}
+.pause{
+  /* background: url('../img/pause.png'); */
 }
 </style>
