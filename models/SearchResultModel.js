@@ -5,6 +5,7 @@ const data = [
   {
     id: 1,
     user: {
+      id: '123',
       username: 'Migos',
       avatar_url : 'https://i1.sndcdn.com/avatars-000317082346-2eyhya-t200x200.jpg'
     },
@@ -53,7 +54,7 @@ list(query) {
     }, 200);
   });
 },
-selected(data = '') {
+selected(data) {
   if(!data) {
     throw new Error(`해당 데이터가 존재하지 않습니다.`);
   }

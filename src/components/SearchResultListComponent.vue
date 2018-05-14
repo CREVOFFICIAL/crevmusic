@@ -1,5 +1,5 @@
 <template>
-  <div v-if="searchResult.length" class="result">
+  <div v-if="searchResult.length" class="result" @scroll="scrolling($event)">
     <ul>
       <li v-for="(item, index) in searchResult" :key="index" @click="onClickList(item, $event)">
         <div class="list-area">
@@ -11,7 +11,7 @@
             <div class="player">
             <img v-bind:src="item.user.avatar_url">
             <div class="btns">
-              <a @click.stop="onClickPlayerModal(index)"><i class="fas fa-play-circle"></i></a>
+              <a @click.stop="onClickPlayerModal(index, item.id)"><i class="fas fa-play-circle"></i></a>
             </div>
             </div>
             <div class="track-info">
@@ -48,9 +48,31 @@ export default {
       toggleClassList(targetEl, 'selected');
       this.$store.commit('selectedList', item);
     },
-    onClickPlayerModal: function (index) {
-      this.$store.commit('updatePlayerModalIndex', index);
+    onClickPlayerModal: function (index, id) {
+      this.$store.commit('clickedPlayerModal', {index, id});
+    },
+    scrolling: function (ev) {
+      var scrollHeight = ev.target.scrollHeight;
+      var scrollTop = ev.target.scrollTop;
+      var clientHeight = ev.target.clientHeight;
+
+      if(clientHeight + scrollTop >= scrollHeight) {
+        window.scrollTo(0, scrollHeight);
+        this.$store.dispatch('requestSearchData');
+      }
     }
   }
 }
 </script>
+<style>
+body {
+  overflow: hidden;
+}
+.result {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  max-height: 380px;
+}
+</style>
