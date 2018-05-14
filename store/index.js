@@ -5,12 +5,13 @@ import SearchResultModel from '../models/SearchResultModel.js';
 import ListModel from '../models/ListModel.js';
 
 Vue.use(Vuex);
-const URL = "http://api.soundcloud.com/tracks/?client_id=1dff55bf515582dc759594dac5ba46e9&limit=100&q=";
+const URL = "http://api.soundcloud.com/tracks/?client_id=1dff55bf515582dc759594dac5ba46e9&limit=10&linked_partitioning=1&q=";
 export default new Vuex.Store({
   state: {
     query: '',
     submitted: false,
     searchResult: [],
+    searchNextHref: null,
     selectedSearchResultItem: [],
     playerModalDataIndex: null,
     playerModalDataId: '',
@@ -37,7 +38,10 @@ export default new Vuex.Store({
   },
   actions: {
     requestSearchData: ({commit, state}) => {
-      axios.get(URL + state.query).then((response) => {
+      if(!state.searchResult.length) {
+        state.searchNextHref = URL + state.query;
+      }
+      axios.get(state.searchNextHref).then((response) => {
         commit('responeSubmitData', response.data);
       });
     },
@@ -84,7 +88,8 @@ export default new Vuex.Store({
     },
     responeSubmitData: (state, data) => {
       state.submitted = true;
-      state.searchResult = data;
+      state.searchResult = state.searchResult.concat(data.collection);
+      state.searchNextHref = data.next_href;
     },
     onReset: (state) => {
       state.query = '';
@@ -130,6 +135,10 @@ export default new Vuex.Store({
         state.player.playButton.classList.add('play');
         state.player.playButton.classList.remove('pause');
       }
+    },
+    previewTimeUpdate: (state) => {
+      let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
+      state.player.playHead.style.marginLeft = playPercent + "px";
     },
     timeUpdate: (state) => {
       let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);

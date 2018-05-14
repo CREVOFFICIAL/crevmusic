@@ -6,7 +6,7 @@
 
           <div class="modal-header">
             <slot name="header">
-              <img v-bind:src="data.artwork_url">
+              <img v-bind:src="data.user.avatar_url">
               <span>{{data.user.username}}</span>
             </slot>
           </div>
@@ -14,13 +14,12 @@
           <div class="modal-body">
             <slot name="body">
               {{data.title}}
-              <audio ref="player" autoplay @timeupdate="timeUpdate" @canplaythrough="canplayHhrough">
+              <audio ref="player" autoplay loop @timeupdate="previewTimeUpdate" @canplaythrough="canplayHhrough">
                 <source v-bind:src="url">
             </audio>
-            	<div id="wrapper">
+            	<div class="wrapper">
               <!--Audio Player Interface-->
-              <div class="audioplayer">
-                <button class="play" ref="playButton" @click="onClickPlayButton"></button>
+              <div class="audio-player">
                 <div class="timeline" ref="timeline" @click="onClickTimeline($event)">
                   <div class="play-head" ref="playHead"></div>
                 </div>
@@ -31,9 +30,11 @@
 
           <div class="modal-footer">
             <slot name="footer">
+              <div>
               <button class="modal-default-button" @click="onClose">
                 닫기
               </button>
+              </div>
             </slot>
           </div>
         </div>
@@ -67,14 +68,11 @@ export default {
     onClose: function () {
       this.$store.commit('onClose');
     },
-    onClickPlayButton: function () {
-      this.$store.commit('onClickPlayButton');
-    },
     onClickTimeline: function(ev) {
       this.$store.dispatch('onClickTimeline', ev);
     },
-    timeUpdate: function () {
-      this.$store.commit('timeUpdate');
+    previewTimeUpdate: function () {
+      this.$store.commit('previewTimeUpdate');
     },
     canplayHhrough: function () {
       this.$store.commit('canplayHhrough');
@@ -99,6 +97,10 @@ export default {
   margin: 10px 0;
   font-size: 0.8rem;
 }
+.modal-footer div {
+  width: 20%;
+  float: right;
+}
 
 .modal-default-button {
   float: right;
@@ -107,41 +109,59 @@ export default {
   font-weight: 100;
   border: none;
   border-radius: 5px;
-  padding: 5px
+  padding: 5px;
+  position: relative;
+  top: -5px;
 }
-.timeline{
-  width: 80%;
+.audio-player .timeline{
+  width: 100%;
   max-width: 1000px;
-  height: 5px;
-	background: rgba(0,0,0,.3);
-	margin-top: 20px;
-	float: left;
-	border-radius: 15px;
+  height: 2px;
+  background: rgba(0,0,0,.3);
+  margin-top: 15px;
+  float: left;
+  border-radius: 15px;
 }
 /*Grabable Playhead*/
-.play-head{
-	cursor: pointer;
-	width: 15px;
-	height: 15px;
-	border-radius: 50%;
-	margin-top: -5px;
-	background: hotpink;
+.audio-player .play-head{
+  cursor: pointer;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: -4px;
+  background: hotpink;
 }
-.audioplayer{
-  width: 100%;
+.wrapper {
+  width: 80%;
+  height: 100%;
+}
+.audio-player{
+  position: relative;
+  left: -5px;
+  top: 0;
+  bottom: 0;
+}
+
+
+/* 플레이어 버튼 만들때 사용할 css와 html */
+.audio-player .play-button{
+	height: 30px;
+	width: 30px;
+	border: none;
+	float:left;
 }
 /* Play/Pause Button */
 .play{
-	/* height:60px;
-	width: 60px;
-	border: none;
-	background-size: 50% 50%;
-	background-repeat: no-repeat;
-	background-position: center;
-	float:left;
-	outline:none; */
+	background: url('https://raw.githubusercontent.com/alexanderkatz/HTML5-Audio/master/img/play.png');
+  background-size: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 .pause{
-  /* background: url('../img/pause.png'); */
+  background: url('https://raw.githubusercontent.com/alexanderkatz/HTML5-Audio/master/img/pause.png');
+  background-size: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
+/* <button class="pause play-button" ref="playButton" @click="onClickPlayButton"></button> */
 </style>

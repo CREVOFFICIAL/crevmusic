@@ -1,5 +1,5 @@
 <template>
-  <div v-if="searchResult.length" class="result">
+  <div v-if="searchResult.length" class="result" @scroll="scrolling($event)">
     <ul>
       <li v-for="(item, index) in searchResult" :key="index" @click="onClickList(item, $event)">
         <div class="list-area">
@@ -50,7 +50,29 @@ export default {
     },
     onClickPlayerModal: function (index, id) {
       this.$store.commit('clickedPlayerModal', {index, id});
+    },
+    scrolling: function (ev) {
+      var scrollHeight = ev.target.scrollHeight;
+      var scrollTop = ev.target.scrollTop;
+      var clientHeight = ev.target.clientHeight;
+
+      if(clientHeight + scrollTop >= scrollHeight) {
+        window.scrollTo(0, scrollHeight);
+        this.$store.dispatch('requestSearchData');
+      }
     }
   }
 }
 </script>
+<style>
+body {
+  overflow: hidden;
+}
+.result {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  max-height: 380px;
+}
+</style>
