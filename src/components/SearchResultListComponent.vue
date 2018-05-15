@@ -10,8 +10,8 @@
           <div class="track-area">
             <div class="player">
             <img v-bind:src="item.user.avatar_url">
-            <div class="btns">
-              <a @click.stop="onClickPlayerModal(index, item.id)"><i class="fas fa-play-circle"></i></a>
+            <div class="btns" @click.stop="onClickPlayerModal(index, item.id)">
+              <a><i class="fas fa-play-circle"></i></a>
             </div>
             </div>
             <div class="track-info">
@@ -71,8 +71,33 @@ body {
 .result {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 77vh;
   overflow-y: scroll;
-  max-height: 380px;
 }
+/* 아이폰 X는 지원 안합니다. */
+@media only screen
+  and (min-device-width: 320px)
+  and (max-device-width: 568px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+  .list-btn-area{
+    top: 513px;
+  }
+}
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 667px) 
+  and (-webkit-min-device-pixel-ratio: 2) { 
+  .list-btn-area{
+    top: 612px;
+  }
+}
+@media only screen
+  and (min-device-width: 414px)
+  and (max-device-width: 736px)
+  and (-webkit-min-device-pixel-ratio: 3) {
+  .list-btn-area{
+    top: 681px;
+  }
+}
+
 </style>

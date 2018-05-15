@@ -201,20 +201,19 @@ input[type=text] {
   margin-right: 0px 5px 0px 5px;
 }
 .list-btn-area {
-  position: relative;
-  top: 380px;
+  position: absolute;
+  top: 707px;
+  left: 0px;
   width: 100%;
   text-align: center;
-  padding: 20px;
+  bottom: 0;
   display: block;
+  background: hotpink;
 }
 .list-btn-area .btn {
-  padding: 10px;
-  background: hotpink;
+  position: relative;
+  top: 15px;
   color: #fff;
-  font-size: 1.2rem;
-  font-weight: 100;
-  border-radius: 5px;
   cursor: pointer;
 }
 ul.tabs {

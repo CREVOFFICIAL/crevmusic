@@ -10,8 +10,8 @@
     <div v-if="submitted">
       <search-result-list></search-result-list>
       <div v-if="showAddListButton">
-        <div class="list-btn-area">
-          <a class="btn" @click="onClickAddListButton">리스트 추가</a>
+        <div class="list-btn-area"  @click="onClickAddListButton">
+          <a class="btn">리스트 추가</a>
         </div>
       </div>
       <player-modal v-if="showPlayerModal !== null"></player-modal>
@@ -23,7 +23,7 @@
         <recommend-list></recommend-list>
       </div>
       <div v-else>
-        <!-- <list v-bind:listData="own" type="own"></list> -->
+        <own-list></own-list>
       </div>
     </div>
   </div>
@@ -36,7 +36,8 @@ import SearchResultListComponent from './components/SearchResultListComponent.vu
 import TabComponent from './components/TabComponent.vue';
 import RecommendListComponent from './components/RecommendListComponent.vue';
 import PlayerModalComponent from './components/PlayerModalComponent.vue';
-import AddListModalComponent from './components/AddSearchResultListModalComponent.vue'
+import AddListModalComponent from './components/AddSearchResultListModalComponent.vue';
+import OwnListComponent from './components/OwnListComponent.vue';
 
 import { mapState } from 'vuex';
 
@@ -54,6 +55,7 @@ export default {
     'search-result-list': SearchResultListComponent,
     'tabs': TabComponent,
     'recommend-list': RecommendListComponent,
+    'own-list': OwnListComponent,
     'player-modal': PlayerModalComponent,
     'add-list-modal': AddListModalComponent
   },
