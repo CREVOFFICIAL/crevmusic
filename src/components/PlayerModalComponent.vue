@@ -14,17 +14,22 @@
           <div class="modal-body">
             <slot name="body">
               {{data.title}}
-              <audio ref="player" autoplay loop @timeupdate="previewTimeUpdate" @canplaythrough="canplayHhrough">
+              <audio ref="player" autoplay loop played @timeupdate="previewTimeUpdate" @canplaythrough="canplayHhrough">
                 <source v-bind:src="url">
             </audio>
-            	<div class="wrapper">
               <!--Audio Player Interface-->
               <div class="audio-player">
+                <div class="player-time">
+                <span>
+                  {{time}}
+                </span>
+                </div>
+                <div class="player-timeline">
                 <div class="timeline" ref="timeline" @click="onClickTimeline($event)">
                   <div class="play-head" ref="playHead"></div>
                 </div>
+                </div>
               </div>
-            </div>
             </slot>
           </div>
 
@@ -62,6 +67,9 @@ export default {
     },
     url() {
       return this.$store.state.playerModalDataURL;
+    },
+    time() {
+      return this.$store.getters.divideTimeSection;
     }
   },
   methods: {
@@ -111,29 +119,9 @@ export default {
   border-radius: 5px;
   padding: 5px;
   position: relative;
-  top: -5px;
-}
-.audio-player .timeline{
-  width: 100%;
-  max-width: 1000px;
-  height: 2px;
-  background: rgba(0,0,0,.3);
-  margin-top: 15px;
-  float: left;
-  border-radius: 15px;
-}
-/*Grabable Playhead*/
-.audio-player .play-head{
+  top: 2px;
+  right: -25px;
   cursor: pointer;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-top: -4px;
-  background: hotpink;
-}
-.wrapper {
-  width: 80%;
-  height: 100%;
 }
 .audio-player{
   position: relative;
@@ -141,8 +129,35 @@ export default {
   top: 0;
   bottom: 0;
 }
-
-
+.player-time {
+  width: 25%;
+  display: inline-block;
+}
+.player-time>span {
+  font-size: 0.1rem;
+}
+.player-timeline {
+  width: 73%;
+  display: inline-block;
+  cursor: pointer;
+}
+.player-timeline .timeline{
+  width: 73%;
+  height: 2px;
+  background: rgba(0,0,0,.3);
+  margin-top: 15px;
+  float: left;
+  border-radius: 15px;
+}
+/*Grabable Playhead*/
+.player-timeline .play-head{
+  cursor: pointer;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: -4px;
+  background: hotpink;
+}
 /* 플레이어 버튼 만들때 사용할 css와 html */
 .audio-player .play-button{
 	height: 30px;

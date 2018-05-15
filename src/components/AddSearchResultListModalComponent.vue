@@ -18,8 +18,8 @@
 
           <div class="modal-footer">
             <slot name="footer">
-              <button> 취소 </button>
-              <button> 추가 </button>
+              <button @click="onClickAddModalClose"> 취소 </button>
+              <button @click="onClickAddList"> 추가 </button>
             </slot>
           </div>
         </div>
@@ -33,7 +33,15 @@ import { mapState } from 'vuex';
 export default {
   computed: mapState({
     item: state => state.selectedSearchResultItem
-  })
+  }),
+  methods: {
+    onClickAddModalClose: function () {
+      this.$store.commit('onClickAddModalClose');
+    },
+    onClickAddList: function () {
+      this.$store.commit('onClickAddList');
+    }
+  }
 };
 </script>
 

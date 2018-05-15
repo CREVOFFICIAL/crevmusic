@@ -18,6 +18,7 @@ export default new Vuex.Store({
     playerModalDataURL: null,
     showAddList: false,
     listData: [],
+    ownListData: [],
     tabList: ['추천 리스트', '나의 리스트'],
     selectedTab: '추천 리스트',
     tracks: {},
@@ -28,12 +29,40 @@ export default new Vuex.Store({
       playHead: null,
       timeline: null,
       timelineWidth: null,
-      timelinePosition: null
+      timelinePosition: null,
+      currentTime: null
     }
   },
   getters:{
     getPlayerModalData: state => {
       return state.searchResult.find((item, i) => i === state.playerModalDataIndex);
+    },
+    divideTimeSection: state => {
+      let startmm;
+      let startss;
+      let startTimeRemaining = Math.round(state.player.currentTime / 60);
+      let endmm = Math.floor(state.player.duration / 60);
+      let endss = Math.round(state.player.duration % 60);
+
+      if(endmm < 10) {
+        endmm = `0${endmm}`;
+      }
+      if(endss < 10) {
+        endss = `0${endss}`;
+      }
+      if(startTimeRemaining <= 0) {
+        startmm = '00';
+        if(Math.round(state.player.currentTime) < 10) {
+          startss = `0${Math.round(state.player.currentTime)}`;
+        } else {
+          startss = `${Math.round(state.player.currentTime)}`;
+        }
+      } else {
+        startmm = `0${startTimeRemaining}`;
+        startss = '00';
+      }
+
+      return `${startmm}:${startss}` + '/' + `${endmm}:${endss}`;
     }
   },
   actions: {
@@ -84,6 +113,7 @@ export default new Vuex.Store({
       if(!state.query.length) {
         state.submitted = false;
         state.searchResult = [];
+        state.selectedSearchResultItem = [];
       }
     },
     responeSubmitData: (state, data) => {
@@ -95,9 +125,14 @@ export default new Vuex.Store({
       state.query = '';
       state.submitted = false;
       state.searchResult = [];
+      state.selectedSearchResultItem = [];
     },
     selectedList: (state, item) => {
-      state.selectedSearchResultItem = SearchResultModel.selected(item);
+      if(state.selectedSearchResultItem.some((val) => val.id === item.id)) {
+        state.selectedSearchResultItem = state.selectedSearchResultItem.filter((val) => val.id !== item.id);
+      } else {
+        state.selectedSearchResultItem = [item, ...state.selectedSearchResultItem];
+      }
     },
     responeRecommendResult:(state, data) => {
       state.listData = data;
@@ -139,9 +174,12 @@ export default new Vuex.Store({
     previewTimeUpdate: (state) => {
       let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
       state.player.playHead.style.marginLeft = playPercent + "px";
+
+      state.player.currentTime = state.player.audio.currentTime;
     },
     timeUpdate: (state) => {
       let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
+
       state.player.playHead.style.marginLeft = playPercent + "px";
       if (state.player.audio.currentTime == state.player.duration) {
         state.player.playButton.className = "";
@@ -159,6 +197,21 @@ export default new Vuex.Store({
     },
     updateCurrentTime: (state, percent) => {
       state.player.audio.currentTime = state.player.duration * percent;
+    },
+    onClickAddModalClose: (state) => {
+      state.showAddList = false;
+    },
+    onClickAddList: (state) => {
+      state.selectedSearchResultItem.forEach(function (item) {
+        state.ownListData.unshift(item);
+      });
+
+      state.selectedSearchResultItem = [];
+      state.showAddList = false;
+      state.query = '';
+      state.submitted = false;
+      state.searchResult = [];
+      state.selectedTab = '나의 리스트';
     }
   }
 });
