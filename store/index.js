@@ -17,6 +17,8 @@ export default new Vuex.Store({
     playerModalDataId: '',
     playerModalDataURL: null,
     showAddList: false,
+    playerIndex: 0,
+    playerDataURL: null,
     listData: [],
     ownListData: [],
     tabList: ['추천 리스트', '나의 리스트'],
@@ -25,7 +27,8 @@ export default new Vuex.Store({
     player: {
       audio: null,
       duration: null,
-      playButton: null,
+      playElement: null,
+      pauseElement: null,
       playHead: null,
       timeline: null,
       timelineWidth: null,
@@ -37,32 +40,35 @@ export default new Vuex.Store({
     getPlayerModalData: state => {
       return state.searchResult.find((item, i) => i === state.playerModalDataIndex);
     },
-    divideTimeSection: state => {
-      let startmm;
-      let startss;
-      let startTimeRemaining = Math.round(state.player.currentTime / 60);
+    getPlayerTitle: state => {
+      return state.ownListData.find((item, i) => i === state.playerIndex);
+    },
+    playingTime: state => {
+      let startmm = Math.floor(state.player.currentTime / 60);
+      let startss = Math.floor(state.player.currentTime) % 60;
+      if(startss < 10) {
+        startss = `0${startss}`;
+      } else {
+        startss = `${startss}`;
+      }
+      if(startmm < 10) {
+        startmm = `0${startmm}`;
+      } else {
+        startmm = `${startmm}`;
+      }
+
+      return `${startmm}:${startss}`;
+    },
+    totalTime: state => {
       let endmm = Math.floor(state.player.duration / 60);
       let endss = Math.round(state.player.duration % 60);
-
       if(endmm < 10) {
         endmm = `0${endmm}`;
       }
       if(endss < 10) {
         endss = `0${endss}`;
       }
-      if(startTimeRemaining <= 0) {
-        startmm = '00';
-        if(Math.round(state.player.currentTime) < 10) {
-          startss = `0${Math.round(state.player.currentTime)}`;
-        } else {
-          startss = `${Math.round(state.player.currentTime)}`;
-        }
-      } else {
-        startmm = `0${startTimeRemaining}`;
-        startss = '00';
-      }
-
-      return `${startmm}:${startss}` + '/' + `${endmm}:${endss}`;
+      return `${endmm}:${endss}`;
     }
   },
   actions: {
@@ -82,7 +88,7 @@ export default new Vuex.Store({
     getPreviewURL: ({commit, state}) => {
       axios.get(`https://api.soundcloud.com/i1/tracks/${state.playerModalDataId}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
       .then((response) => {
-        commit('changePlayerModalData', response.data.preview_mp3_128_url);
+        commit('changePlayerModalDataURL', response.data.preview_mp3_128_url);
       });
     },
     onClickTimeline: ({commit, state} , ev) => {
@@ -102,6 +108,16 @@ export default new Vuex.Store({
 
       let percent = newMargLeft / state.player.timelineWidth;
       commit('updateCurrentTime', percent);
+    },
+    setPlayerIndex: ({dispatch, commit, state}, index) => {
+      commit('updatePlayerIndex', index);
+      dispatch('getPlayerURL', state.playerIndex);
+    },
+    getPlayerURL: ({commit, state}, index) => {
+      axios.get(`https://api.soundcloud.com/i1/tracks/${state.ownListData[index].id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+      .then((response) => {
+        commit('changePlayerDataURL', response.data.http_mp3_128_url);
+      });
     }
   },
   mutations: {
@@ -114,18 +130,21 @@ export default new Vuex.Store({
         state.submitted = false;
         state.searchResult = [];
         state.selectedSearchResultItem = [];
+        state.playerDataURL = 0;
       }
     },
     responeSubmitData: (state, data) => {
       state.submitted = true;
       state.searchResult = state.searchResult.concat(data.collection);
       state.searchNextHref = data.next_href;
+      state.playerDataURL = 0;
     },
     onReset: (state) => {
       state.query = '';
       state.submitted = false;
       state.searchResult = [];
       state.selectedSearchResultItem = [];
+      state.playerDataURL = 0;
     },
     selectedList: (state, item) => {
       if(state.selectedSearchResultItem.some((val) => val.id === item.id)) {
@@ -139,6 +158,7 @@ export default new Vuex.Store({
     },
     onClickTab: (state, tabName) => {
       state.selectedTab = tabName;
+      state.playerDataURL = 0;
     },
     clickedPlayerModal: (state, {index, id}) => {
       state.playerModalDataIndex = index;
@@ -147,44 +167,44 @@ export default new Vuex.Store({
     onClickAddListButton: (state) => {
       state.showAddList = true;
     },
-    changePlayerModalData: (state, url) => {
+    changePlayerModalDataURL: (state, url) => {
       state.playerModalDataURL = url;
+    },
+    changePlayerDataURL: (state, url) => {
+      state.playerDataURL = url;
+      console.log(state.playerDataURL);
+    },
+    updatePlayerModalObject: (state, refs) => {
+      state.player.audio = refs.player;
+      state.player.playHead = refs.playHead;
+      state.player.timeline = refs.timeline;
+      state.player.timelineWidth = state.player.timeline.offsetWidth - state.player.playHead.offsetWidth;
     },
     updatePlayerObject: (state, refs) => {
       state.player.audio = refs.player;
-      state.player.playButton = refs.playButton;
+      state.player.playElement = refs.playElement;
+      state.player.pauseElement = refs.pauseElement;
       state.player.playHead = refs.playHead;
       state.player.timeline = refs.timeline;
       state.player.timelineWidth = state.player.timeline.offsetWidth - state.player.playHead.offsetWidth;
     },
     onClickPlayButton: (state) => {
       // start audio
-      if (state.player.audio.paused) {
+      if(state.player.playElement.style.display === 'inline-block') {
         state.player.audio.play();
-        // remove play, add pause
-        state.player.playButton.classList.remove('play');
-        state.player.playButton.classList.add('pause');
-      } else { // pause audio
+        state.player.playElement.style.display = 'none';
+        state.player.pauseElement.style.display = 'inline-block';
+      } else {
         state.player.audio.pause();
-        // remove pause, add play
-        state.player.playButton.classList.add('play');
-        state.player.playButton.classList.remove('pause');
+        state.player.playElement.style.display = 'inline-block';
+        state.player.pauseElement.style.display = 'none';
       }
     },
-    previewTimeUpdate: (state) => {
+    timeUpdate: (state) => {
       let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
       state.player.playHead.style.marginLeft = playPercent + "px";
 
       state.player.currentTime = state.player.audio.currentTime;
-    },
-    timeUpdate: (state) => {
-      let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
-
-      state.player.playHead.style.marginLeft = playPercent + "px";
-      if (state.player.audio.currentTime == state.player.duration) {
-        state.player.playButton.className = "";
-        state.player.playButton.className = "play";
-      }
     },
     canplayHhrough: (state) => {
       state.player.duration = state.player.audio.duration;
@@ -212,6 +232,17 @@ export default new Vuex.Store({
       state.submitted = false;
       state.searchResult = [];
       state.selectedTab = '나의 리스트';
+    },
+    updatePlayerIndex: (state, index) => {
+      state.playerIndex += index;
+      if(state.playerIndex >= state.ownListData.length) {
+        state.playerIndex = 0;
+      } else if (state.playerIndex < 0) {
+        state.playerIndex = state.ownListData.length - 1;
+      }
+      if(state.player.pauseElement.style.display === 'inline-block') {
+        state.player.audio.setAttribute('autoplay', '');
+      }
     }
   }
 });

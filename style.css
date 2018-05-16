@@ -201,13 +201,11 @@ input[type=text] {
   margin-right: 0px 5px 0px 5px;
 }
 .list-btn-area {
-  position: absolute;
-  top: 707px;
-  left: 0px;
+  position: fixed;
   width: 100%;
-  text-align: center;
+  height: 50px;
   bottom: 0;
-  display: block;
+  text-align: center;
   background: hotpink;
 }
 .list-btn-area .btn {

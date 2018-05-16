@@ -1,16 +1,5 @@
 <template>
   <div v-if="listData.length">
-    <div class="list-play">
-      <div>
-        <button>플레이</button>
-      </div>
-      <div>
-        <button>삭제</button>
-      </div>
-      <div>
-        <button>초기화</button>
-      </div>
-    </div>
     <div class="own-list-area">
     <ul class="own-list">
       <li v-for="(item, index) in listData" :key="index">
@@ -42,10 +31,9 @@ export default {
 <style>
 .own-list-area {
   position: absolute;
-  top: 230px;
+  top: 183px;
   overflow-y: scroll;
-  height: 100%;
-  max-height: 65%;
+  height: 66vh;
   width: 100%;
 }
 .own-list>li {
@@ -86,28 +74,40 @@ export default {
   font-weight: 400;
   font-size: 0.8rem;
 }
-.list-play {
-  text-align: center;
-  width: 100%;
-}
-.list-play>div {
-  display: inline-block;
-  width: 33.3333%;
-  float: left;
-}
-.list-play>div>button {
-  border: none;
-  width: 80%;
-  height: 30px;
-  margin: 10px 10px 10px 5px;
-  background: hotpink;
-  border-radius: 5px;
-  color: #fff;
-  font-weight: 100;
-  letter-spacing: 2px;
-  cursor: pointer;
-}
 .own-list>li:nth-child(2n) {
   background: #D3D3D3;
+}
+@media only screen
+  and (min-device-width: 320px)
+  and (max-device-width: 568px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+.own-list-area {
+    height: 54vh;
+  }
+}
+@media only screen
+  and (min-device-width: 375px)
+  and (max-device-width: 667px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+.own-list-area {
+    height: 61vh;
+  }
+}
+@media only screen
+  and (min-device-width: 414px)
+  and (max-device-width: 736px)
+  and (-webkit-min-device-pixel-ratio: 3) {
+.own-list-area {
+    height: 65vh;
+  }
+}
+@media only screen
+  and (min-device-width: 375px)
+  and (max-device-width: 667px)
+  and (min-device-height: 812px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+.own-list-area {
+    height: 67.5vh;
+  }
 }
 </style>
