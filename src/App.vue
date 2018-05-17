@@ -24,6 +24,7 @@
       </div>
       <div v-else>
         <own-list></own-list>
+        <footer-player></footer-player>
       </div>
     </div>
   </div>
@@ -38,6 +39,7 @@ import RecommendListComponent from './components/RecommendListComponent.vue';
 import PlayerModalComponent from './components/PlayerModalComponent.vue';
 import AddListModalComponent from './components/AddSearchResultListModalComponent.vue';
 import OwnListComponent from './components/OwnListComponent.vue';
+import FooterPlayerComponent from './components/FooterPlayerComponent.vue';
 
 import { mapState } from 'vuex';
 
@@ -57,7 +59,8 @@ export default {
     'recommend-list': RecommendListComponent,
     'own-list': OwnListComponent,
     'player-modal': PlayerModalComponent,
-    'add-list-modal': AddListModalComponent
+    'add-list-modal': AddListModalComponent,
+    'footer-player': FooterPlayerComponent
   },
   methods: {
     onClickAddListButton: function() {

@@ -14,14 +14,14 @@
           <div class="modal-body">
             <slot name="body">
               {{data.title}}
-              <audio ref="player" autoplay loop played @timeupdate="previewTimeUpdate" @canplaythrough="canplayHhrough">
+              <audio ref="player" autoplay loop played @timeupdate="timeUpdate" @canplaythrough="canplayHhrough">
                 <source v-bind:src="url">
             </audio>
               <!--Audio Player Interface-->
               <div class="audio-player">
                 <div class="player-time">
                 <span>
-                  {{time}}
+                  {{playingTime}} / {{totalTime}}
                 </span>
                 </div>
                 <div class="player-timeline">
@@ -59,7 +59,7 @@ export default {
     this.$watch('url', () => {
         this.$refs.player.load()
     });
-    this.$store.commit('updatePlayerObject', this.$refs);
+    this.$store.commit('updatePlayerModalObject', this.$refs);
   },
   computed:{
     data() {
@@ -68,8 +68,11 @@ export default {
     url() {
       return this.$store.state.playerModalDataURL;
     },
-    time() {
-      return this.$store.getters.divideTimeSection;
+    playingTime() {
+      return this.$store.getters.playingTime;
+    },
+    totalTime() {
+      return this.$store.getters.totalTime;
     }
   },
   methods: {
@@ -79,8 +82,8 @@ export default {
     onClickTimeline: function(ev) {
       this.$store.dispatch('onClickTimeline', ev);
     },
-    previewTimeUpdate: function () {
-      this.$store.commit('previewTimeUpdate');
+    timeUpdate: function () {
+      this.$store.commit('timeUpdate');
     },
     canplayHhrough: function () {
       this.$store.commit('canplayHhrough');
@@ -158,25 +161,4 @@ export default {
   margin-top: -4px;
   background: hotpink;
 }
-/* 플레이어 버튼 만들때 사용할 css와 html */
-.audio-player .play-button{
-	height: 30px;
-	width: 30px;
-	border: none;
-	float:left;
-}
-/* Play/Pause Button */
-.play{
-	background: url('https://raw.githubusercontent.com/alexanderkatz/HTML5-Audio/master/img/play.png');
-  background-size: 50%;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.pause{
-  background: url('https://raw.githubusercontent.com/alexanderkatz/HTML5-Audio/master/img/pause.png');
-  background-size: 50%;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-/* <button class="pause play-button" ref="playButton" @click="onClickPlayButton"></button> */
 </style>
