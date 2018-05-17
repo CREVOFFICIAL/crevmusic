@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="requestSearchData">
-    <input type="text" :value="this.query" @input="updateQuery" placeholder="검색어를 입력하세요" autofocus>
+    <input type="text" ref="searchInput" :value="this.query" @click="onClickSearchInput" @input="updateQuery" placeholder="검색어를 입력하세요" autofocus>
     <button v-show="this.query.length" @click="onReset" type="reset" class="btn-reset"></button>
   </form>
 </template>
@@ -20,6 +20,9 @@ export default {
     },
     onReset() {
       this.$store.commit('onReset');
+    },
+    onClickSearchInput() {
+      this.$store.commit('onClickSearchInput', this.$refs.searchInput);
     }
   }
 }

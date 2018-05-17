@@ -19,8 +19,15 @@ export default new Vuex.Store({
     showAddList: false,
     playerIndex: 0,
     playerDataURL: null,
+    nowPlayingTitle: {
+      preview: '',
+      full: '',
+    },
     listData: [],
     ownListData: [],
+    showSettingModal: false,
+    settingInfoURL: '',
+    settingDeleteIndex: null,
     tabList: ['추천 리스트', '나의 리스트'],
     selectedTab: '추천 리스트',
     tracks: {},
@@ -39,9 +46,6 @@ export default new Vuex.Store({
   getters:{
     getPlayerModalData: state => {
       return state.searchResult.find((item, i) => i === state.playerModalDataIndex);
-    },
-    getPlayerTitle: state => {
-      return state.ownListData.find((item, i) => i === state.playerIndex);
     },
     playingTime: state => {
       let startmm = Math.floor(state.player.currentTime / 60);
@@ -73,22 +77,30 @@ export default new Vuex.Store({
   },
   actions: {
     requestSearchData: ({commit, state}) => {
-      if(!state.searchResult.length) {
-        state.searchNextHref = URL + state.query;
+      if(state.searchResult.length) {
+        state.searchResult.length = 0;
       }
+      axios.get(URL + state.query).then((response) => {
+        commit('responseSubmitData', response.data);
+      });
+    },
+    requestSearchNextHrefData: ({commit, state}) => {
       axios.get(state.searchNextHref).then((response) => {
-        commit('responeSubmitData', response.data);
+        commit('responseSubmitData', response.data);
       });
     },
     requestRecommendData: ({commit}) => {
       ListModel.list().then(data => {
-        commit('responeRecommendResult', data);
+        commit('responseRecommendResult', data);
       });
     },
     getPreviewURL: ({commit, state}) => {
       axios.get(`https://api.soundcloud.com/i1/tracks/${state.playerModalDataId}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
       .then((response) => {
         commit('changePlayerModalDataURL', response.data.preview_mp3_128_url);
+      })
+      .catch((error) => {
+        console.log(error);
       });
     },
     onClickTimeline: ({commit, state} , ev) => {
@@ -113,10 +125,28 @@ export default new Vuex.Store({
       commit('updatePlayerIndex', index);
       dispatch('getPlayerURL', state.playerIndex);
     },
+    checkUndefinedPlayerURL: ({commit, state}) => {
+      var compelted = 0;
+      var length = state.ownListData.length;
+      Array.prototype.forEach.call(state.selectedSearchResultItem, (item, index) => {
+        axios.get(`https://api.soundcloud.com/i1/tracks/${item.id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+        .then((response) => {
+          compelted++;
+          if(typeof response.data.http_mp3_128_url === 'undefined') {
+            alert(`해당 ${item.title}은 추가할 수 없습니다.`);
+          } else {
+            commit('pushOwnData', {item, index, length});
+          }
+          if(compelted === state.selectedSearchResultItem.length) {
+            commit('completedPushOwnData');
+          }
+        });
+      });
+    },
     getPlayerURL: ({commit, state}, index) => {
       axios.get(`https://api.soundcloud.com/i1/tracks/${state.ownListData[index].id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
       .then((response) => {
-        commit('changePlayerDataURL', response.data.http_mp3_128_url);
+        commit('changePlayerDataURL', {url: response.data.http_mp3_128_url, index: index});
       });
     }
   },
@@ -130,35 +160,38 @@ export default new Vuex.Store({
         state.submitted = false;
         state.searchResult = [];
         state.selectedSearchResultItem = [];
-        state.playerDataURL = 0;
+        state.playerIndex = 0;
       }
     },
-    responeSubmitData: (state, data) => {
+    onClickSearchInput: (state, inputELement) => {
+      inputELement.setSelectionRange(0, inputELement.value.length);
+    },
+    responseSubmitData: (state, data) => {
       state.submitted = true;
       state.searchResult = state.searchResult.concat(data.collection);
       state.searchNextHref = data.next_href;
-      state.playerDataURL = 0;
+      state.playerIndex = 0;
     },
     onReset: (state) => {
       state.query = '';
       state.submitted = false;
       state.searchResult = [];
       state.selectedSearchResultItem = [];
-      state.playerDataURL = 0;
+      state.playerIndex = 0;
     },
     selectedList: (state, item) => {
       if(state.selectedSearchResultItem.some((val) => val.id === item.id)) {
         state.selectedSearchResultItem = state.selectedSearchResultItem.filter((val) => val.id !== item.id);
       } else {
-        state.selectedSearchResultItem = [item, ...state.selectedSearchResultItem];
+        state.selectedSearchResultItem.push(item);
       }
     },
-    responeRecommendResult:(state, data) => {
+    responseRecommendResult:(state, data) => {
       state.listData = data;
     },
     onClickTab: (state, tabName) => {
       state.selectedTab = tabName;
-      state.playerDataURL = 0;
+      state.playerIndex = 0;
     },
     clickedPlayerModal: (state, {index, id}) => {
       state.playerModalDataIndex = index;
@@ -170,8 +203,14 @@ export default new Vuex.Store({
     changePlayerModalDataURL: (state, url) => {
       state.playerModalDataURL = url;
     },
-    changePlayerDataURL: (state, url) => {
+    changePlayerDataURL: (state, {url, index}) => {
       state.playerDataURL = url;
+      state.nowPlayingTitle.full = state.ownListData[index].title;
+      if(state.nowPlayingTitle.full.length > 35) {
+        state.nowPlayingTitle.preview = state.nowPlayingTitle.full.slice(0, 35) + '...';
+      } else {
+        state.nowPlayingTitle.preview = state.nowPlayingTitle.full;
+      }
       console.log(state.playerDataURL);
     },
     updatePlayerModalObject: (state, refs) => {
@@ -189,7 +228,6 @@ export default new Vuex.Store({
       state.player.timelineWidth = state.player.timeline.offsetWidth - state.player.playHead.offsetWidth;
     },
     onClickPlayButton: (state) => {
-      // start audio
       if(state.player.playElement.style.display === 'inline-block') {
         state.player.audio.play();
         state.player.playElement.style.display = 'none';
@@ -221,17 +259,16 @@ export default new Vuex.Store({
     onClickAddModalClose: (state) => {
       state.showAddList = false;
     },
-    onClickAddList: (state) => {
-      state.selectedSearchResultItem.forEach(function (item) {
-        state.ownListData.unshift(item);
-      });
-
+    completedPushOwnData: (state) => {
       state.selectedSearchResultItem = [];
       state.showAddList = false;
       state.query = '';
       state.submitted = false;
       state.searchResult = [];
       state.selectedTab = '나의 리스트';
+    },
+    pushOwnData: (state, {item, index, length}) => {
+      state.ownListData[index + length] = item;
     },
     updatePlayerIndex: (state, index) => {
       state.playerIndex += index;
@@ -242,7 +279,25 @@ export default new Vuex.Store({
       }
       if(state.player.pauseElement.style.display === 'inline-block') {
         state.player.audio.setAttribute('autoplay', '');
+        state.player.playElement.style.display = 'none';
+      } else {
+        state.player.audio.removeAttribute('autoplay');
       }
+    },
+    onClickSettingButton: (state, {url, index}) => {
+      state.settingInfoURL = url;
+      state.settingDeleteIndex = index;
+      state.showSettingModal = true;
+    },
+    onClickCloseSettingModal: (state) => {
+      state.showSettingModal = false;
+    },
+    onClickInfoSettingModal: (state) => {
+      window.open(state.settingInfoURL);
+    },
+    onClickDeleteSettingModal: (state) => {
+      console.log(state.ownListData.splice(state.settingDeleteIndex, 1));
+      state.showSettingModal = false;
     }
   }
 });

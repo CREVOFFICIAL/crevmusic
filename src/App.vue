@@ -9,9 +9,9 @@
   <div class="content">
     <div v-if="submitted">
       <search-result-list></search-result-list>
-      <div v-if="showAddListButton">
+      <div v-if="selectedSearchItemLength">
         <div class="list-btn-area"  @click="onClickAddListButton">
-          <a class="btn">리스트 추가</a>
+          <a class="btn">리스트 추가({{selectedSearchItemLength}}개)</a>
         </div>
       </div>
       <player-modal v-if="showPlayerModal !== null"></player-modal>
@@ -24,7 +24,10 @@
       </div>
       <div v-else>
         <own-list></own-list>
-        <footer-player></footer-player>
+        <div v-if="showOwnListPlayer">
+          <footer-player></footer-player>
+        </div>
+        <setting-modal v-if="showSettingModal"></setting-modal>
       </div>
     </div>
   </div>
@@ -40,6 +43,7 @@ import PlayerModalComponent from './components/PlayerModalComponent.vue';
 import AddListModalComponent from './components/AddSearchResultListModalComponent.vue';
 import OwnListComponent from './components/OwnListComponent.vue';
 import FooterPlayerComponent from './components/FooterPlayerComponent.vue';
+import SettingModalComponent from './components/SettingModalComponent.vue';
 
 import { mapState } from 'vuex';
 
@@ -47,10 +51,12 @@ export default {
   name: 'app',
   computed: mapState({
     submitted: state => state.submitted,
-    showAddListButton: state => state.selectedSearchResultItem.length,
+    selectedSearchItemLength: state => state.selectedSearchResultItem.length,
     selectedTab: state => state.selectedTab,
     showPlayerModal: state => state.playerModalDataIndex,
-    showAddListModal: state => state.showAddList
+    showAddListModal: state => state.showAddList,
+    showOwnListPlayer: state => state.ownListData.length,
+    showSettingModal: state => state.showSettingModal
   }),
   components: {
     'search-form': FormComponent,
@@ -60,7 +66,8 @@ export default {
     'own-list': OwnListComponent,
     'player-modal': PlayerModalComponent,
     'add-list-modal': AddListModalComponent,
-    'footer-player': FooterPlayerComponent
+    'footer-player': FooterPlayerComponent,
+    'setting-modal': SettingModalComponent
   },
   methods: {
     onClickAddListButton: function() {
