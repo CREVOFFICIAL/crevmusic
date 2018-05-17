@@ -2,7 +2,7 @@
   <div class="footer-player-area">
       <div class="footer-player-btn">
         <a @click="onClickBackward(-1)"><i class="fas fa-step-backward"></i></a>
-        <a @click="onClickPlayButton" class="play" ref="playElement"><i class="far fa-play-circle"></i></a>
+        <a @click="onClickPlayButton" class="play" ref="playElement" style="display: inline-block;"><i class="far fa-play-circle"></i></a>
         <a @click="onClickPlayButton" class="pause" ref="pauseElement"><i class="far fa-pause-circle"></i></a>
         <a @click="onClickForward(1)"><i class="fas fa-step-forward"></i></a>
       </div>
@@ -31,7 +31,7 @@
 import { mapState } from 'vuex';
 
 export default {
-  created() {
+  beforeCreate() {
     this.$store.dispatch('getPlayerURL', 0);
   },
   mounted() {
@@ -42,11 +42,7 @@ export default {
   },
   computed:{
     title() {
-      if(this.$store.getters.getPlayerTitle.title.length > 35) {
-        return this.$store.getters.getPlayerTitle.title.slice(0, 35) + '...';
-      } else {
-        return this.$store.getters.getPlayerTitle.title;
-      }
+      return this.$store.state.nowPlayingTitle.preview;
     },
     url() {
       return this.$store.state.playerDataURL;
@@ -99,9 +95,6 @@ export default {
   position: relative;
   top: -4px;
   padding: 0px 20px 0px 20px;
-}
-.footer-player-btn .play {
-  display: inline-block;
 }
 .footer-player-btn .pause {
   display: none;

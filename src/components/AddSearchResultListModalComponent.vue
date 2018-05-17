@@ -39,7 +39,8 @@ export default {
       this.$store.commit('onClickAddModalClose');
     },
     onClickAddList: function () {
-      this.$store.commit('onClickAddList');
+      // this.$store.commit('onClickAddList');
+      this.$store.dispatch('checkUndefinedPlayerURL');
     }
   }
 };

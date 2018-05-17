@@ -2,7 +2,7 @@
   <div v-if="listData.length">
     <div class="own-list-area">
     <ul class="own-list">
-      <li v-for="(item, index) in listData" :key="index">
+      <li v-for="(item, index) in listData" :key="index" v-bind:class="{nowPlaying: playerTitle === item.title}">
         <div class="numbar-area">
           <span class="number">{{index + 1}}</span>
         </div>
@@ -12,20 +12,29 @@
         <div class="title-area">
           <span class="title">{{item.title}}</span>
         </div>
+        <div class="setting-area">
+          <a @click="onClickSettingButton({url:item.permalink_url, index: index})"><i class="fas fa-ellipsis-v"></i></a>
+        </div>
       </li>
     </ul>
     </div>
   </div>
   <div v-else>
-    <span>추천 리스트가 없습니다</span>
+    <span>나의 리스트가 없습니다</span>
   </div>
 </template>
 <script>
 import { mapState } from 'vuex';
 export default {
   computed: mapState({
-    listData: state => state.ownListData
-  })
+    listData: state => state.ownListData,
+    playerTitle: state => state.nowPlayingTitle.full
+  }),
+  methods: {
+    onClickSettingButton: function ({url, index}) {
+      this.$store.commit('onClickSettingButton', {url, index});
+    }
+  }
 }
 </script>
 <style>
@@ -74,9 +83,16 @@ export default {
   font-weight: 400;
   font-size: 0.8rem;
 }
-.own-list>li:nth-child(2n) {
-  background: #D3D3D3;
+.setting-area {
+  font-size: 0.8rem;
+  cursor: pointer;
+  float: right;
+  width: 5%;
+};
+.nowPlaying {
+  background: lightgray;
 }
+
 @media only screen
   and (min-device-width: 320px)
   and (max-device-width: 568px)

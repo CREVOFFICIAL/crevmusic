@@ -40,7 +40,8 @@ import { findClosestParentWithClass, toggleClassList } from '../utils/domUtils.j
 
 export default {
   computed: mapState({
-    searchResult: state => state.searchResult
+    searchResult: state => state.searchResult,
+    errorData: state => state.errorData
   }),
   methods: {
     onClickList: function (item, ev) {
@@ -58,7 +59,7 @@ export default {
 
       if(clientHeight + scrollTop >= scrollHeight) {
         window.scrollTo(0, scrollHeight);
-        this.$store.dispatch('requestSearchData');
+        this.$store.dispatch('requestSearchNextHrefData');
       }
     }
   }
