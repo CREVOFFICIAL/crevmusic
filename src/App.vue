@@ -21,12 +21,12 @@
       <tabs v-bind:selectedTab="selectedTab"></tabs>
       <div v-if="selectedTab === '추천 리스트'">
         <recommend-list></recommend-list>
+        <own-list v-if="recommendListData.length" v-bind:listData="recommendListData"></own-list>
       </div>
       <div v-else>
-        <own-list></own-list>
-        <div v-if="showOwnListPlayer">
-          <footer-player></footer-player>
-        </div>
+        <own-list-description v-if="showOwnListPlayer.length"></own-list-description>
+        <own-list v-bind:listData="ownListData"></own-list>
+        <footer-player v-if="showOwnListPlayer.length"></footer-player>
         <setting-modal v-if="showSettingModal"></setting-modal>
       </div>
     </div>
@@ -44,6 +44,7 @@ import AddListModalComponent from './components/AddSearchResultListModalComponen
 import OwnListComponent from './components/OwnListComponent.vue';
 import FooterPlayerComponent from './components/FooterPlayerComponent.vue';
 import SettingModalComponent from './components/SettingModalComponent.vue';
+import OwnListDescriptionComponent from './components/OwnListDescriptionComponent.vue';
 
 import { mapState } from 'vuex';
 
@@ -55,8 +56,10 @@ export default {
     selectedTab: state => state.selectedTab,
     showPlayerModal: state => state.playerModalDataIndex,
     showAddListModal: state => state.showAddList,
-    showOwnListPlayer: state => state.ownListData.length,
-    showSettingModal: state => state.showSettingModal
+    showOwnListPlayer: state => state.ownListData,
+    showSettingModal: state => state.showSettingModal,
+    ownListData: state => state.ownListData,
+    recommendListData: state => state.recommendListData
   }),
   components: {
     'search-form': FormComponent,
@@ -67,7 +70,8 @@ export default {
     'player-modal': PlayerModalComponent,
     'add-list-modal': AddListModalComponent,
     'footer-player': FooterPlayerComponent,
-    'setting-modal': SettingModalComponent
+    'setting-modal': SettingModalComponent,
+    'own-list-description': OwnListDescriptionComponent
   },
   methods: {
     onClickAddListButton: function() {

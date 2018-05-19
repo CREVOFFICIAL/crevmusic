@@ -59,8 +59,8 @@ const Data = [
         }
       }
     ],
-    title: '카페에서 듣기 좋은 노래',
-    date: '18.05.10'
+    title: 'wookga님의 플레이 리스트',
+    date: '05.10'
   },
   {
     id: 2,
@@ -122,8 +122,8 @@ const Data = [
         }
       }
     ],
-    title: '감성을 자극하는 노래',
-    date: '18.05.10'
+    title: 'shim_z님의 플레이 리스트',
+    date: '05.10'
   }
 ];
 

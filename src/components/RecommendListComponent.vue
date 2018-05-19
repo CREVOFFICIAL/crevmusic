@@ -1,9 +1,9 @@
 <template>
-  <div v-if="listData.length">
+  <div v-if="data.length">
     <ul class="list">
-      <li v-for="(item, index) in listData" :key="index"
-          @click="onClickList()">
-        <span class="number">{{index + 1}}</span>
+      <li v-for="(item, index) in data" :key="index"
+          @click="onClickList">
+        <i class="fas fa-headphones"></i>
         {{item.title}}
         <span class="date">{{item.date}}</span>
       </li>
@@ -17,14 +17,21 @@
 import { mapState } from 'vuex';
 export default {
   created() {
-    this.$store.dispatch('requestRecommendData');
+    this.$store.dispatch('requestRecommendChart');
   },
   computed: mapState({
-    listData: state => state.listData
+    data: state => state.recommendListChart
   }),
   methods: {
     onClickList: function () {
+      this.$store.dispatch('requestRecommendData');
     }
   }
 };
 </script>
+<style>
+.fa-headphones {
+  color: hotpink;
+  margin-right: 5px;
+}
+</style>
