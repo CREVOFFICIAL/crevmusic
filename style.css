@@ -93,7 +93,8 @@ video {
 
 body {
   font-family: 'Roboto', sans-serif;
-  background: #F4F6F9
+  background: #F4F6F9;
+  font-weight: 300;
 }
 
 ul {
@@ -120,8 +121,6 @@ input[type=text] {
   font-size: 14px;
   line-height: 1.5;
   border: 1px solid #cccccc;
-}
-.content {
 }
 .content .result li{
   border-bottom: 1px #ccc solid;

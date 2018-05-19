@@ -2,9 +2,10 @@
   <div v-if="listData.length">
     <div class="own-list-area">
     <ul class="own-list">
-      <li v-for="(item, index) in listData" :key="index" v-bind:class="{nowPlaying: playerTitle === item.title}">
+      <li v-for="(item, index) in listData" :key="index" v-bind:class="{nowPlaying: playerTitle === item.title}" @click="onClickOwnListElement(index)">
         <div class="numbar-area">
-          <span class="number">{{index + 1}}</span>
+          <span class="number" v-bind:class="playlistEdit === '완료'? 'hide' : 'show'">{{index + 1}}</span>
+          <span class="delete" v-bind:class="playlistEdit === '완료'? 'show' : 'hide'" @click.stop="editPlaylist(index)">X</span>
         </div>
         <div class="img-area">
           <img v-bind:src="item.user.avatar_url">
@@ -13,26 +14,35 @@
           <span class="title">{{item.title}}</span>
         </div>
         <div class="setting-area">
-          <a @click="onClickSettingButton({url:item.permalink_url, index: index})"><i class="fas fa-ellipsis-v"></i></a>
+          <a @click.stop="onClickSettingButton({url:item.permalink_url, index: index})"><i class="fas fa-ellipsis-v"></i></a>
         </div>
       </li>
     </ul>
     </div>
   </div>
   <div v-else>
-    <span>나의 리스트가 없습니다</span>
+    <span>현재 리스트 목록이 없습니다</span>
   </div>
 </template>
 <script>
 import { mapState } from 'vuex';
 export default {
+  props: ['listData'],
   computed: mapState({
-    listData: state => state.ownListData,
-    playerTitle: state => state.nowPlayingTitle.full
+    // listData: state => state.ownListData,
+    playerTitle: state => state.nowPlayingTitle.full,
+    ownListName: state => state.ownListName,
+    playlistEdit: state => state.playlistEdit
   }),
   methods: {
     onClickSettingButton: function ({url, index}) {
       this.$store.commit('onClickSettingButton', {url, index});
+    },
+    onClickOwnListElement: function (index) {
+      this.$store.dispatch('getPlayerURL', index);
+    },
+    editPlaylist: function (index) {
+      this.$store.dispatch('editPlaylist', index);
     }
   }
 }
@@ -40,9 +50,9 @@ export default {
 <style>
 .own-list-area {
   position: absolute;
-  top: 183px;
+  top: 218px;
   overflow-y: scroll;
-  height: 66vh;
+  height: 61vh;
   width: 100%;
 }
 .own-list>li {
@@ -65,6 +75,17 @@ export default {
   position: relative;
   top: 3px;
 }
+.own-list .numbar-area .delete {
+  color: darkgray;
+  position: relative;
+  top: 3px;
+}
+.show {
+  display: block;
+}
+.hide {
+  display: none;
+}
 .own-list .img-area {
   width: 50px;
   height: 25px;
@@ -85,20 +106,20 @@ export default {
 }
 .setting-area {
   font-size: 0.8rem;
+  color: darkgray;
   cursor: pointer;
   float: right;
-  width: 5%;
-};
+  width: 4%;
+}
 .nowPlaying {
   background: lightgray;
 }
-
 @media only screen
   and (min-device-width: 320px)
   and (max-device-width: 568px)
   and (-webkit-min-device-pixel-ratio: 2) {
 .own-list-area {
-    height: 54vh;
+    height: 47vh;
   }
 }
 @media only screen
@@ -106,7 +127,7 @@ export default {
   and (max-device-width: 667px)
   and (-webkit-min-device-pixel-ratio: 2) {
 .own-list-area {
-    height: 61vh;
+    height: 55vh;
   }
 }
 @media only screen
@@ -114,7 +135,7 @@ export default {
   and (max-device-width: 736px)
   and (-webkit-min-device-pixel-ratio: 3) {
 .own-list-area {
-    height: 65vh;
+    height: 60vh;
   }
 }
 @media only screen
@@ -123,7 +144,7 @@ export default {
   and (min-device-height: 812px)
   and (-webkit-min-device-pixel-ratio: 2) {
 .own-list-area {
-    height: 67.5vh;
+    height: 63.5vh;
   }
 }
 </style>

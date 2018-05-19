@@ -8,7 +8,6 @@
             <slot name="body">
              <ul>
                <li @click="onClickInfoSettingModal">노래정보</li>
-               <li @click="onClickDeleteSettingModal">삭제</li>
                <li @click="onClickCloseSettingModal">닫기</li>
              </ul>
             </slot>
@@ -23,9 +22,6 @@ export default {
   methods: {
     onClickCloseSettingModal: function () {
       this.$store.commit('onClickCloseSettingModal');
-    },
-    onClickDeleteSettingModal: function () {
-      this.$store.commit('onClickDeleteSettingModal');
     },
     onClickInfoSettingModal: function () {
       this.$store.commit('onClickInfoSettingModal');
@@ -53,6 +49,5 @@ export default {
 }
 .modal-setting-body li:nth-child(2n) {
   border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
 }
 </style>

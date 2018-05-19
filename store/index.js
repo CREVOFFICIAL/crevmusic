@@ -16,6 +16,7 @@ export default new Vuex.Store({
     playerModalDataIndex: null,
     playerModalDataId: '',
     playerModalDataURL: null,
+    playlistEdit: '편집',
     showAddList: false,
     playerIndex: 0,
     playerDataURL: null,
@@ -23,7 +24,8 @@ export default new Vuex.Store({
       preview: '',
       full: '',
     },
-    listData: [],
+    recommendListChart: [],
+    recommendListData: [],
     ownListData: [],
     showSettingModal: false,
     settingInfoURL: '',
@@ -41,6 +43,10 @@ export default new Vuex.Store({
       timelineWidth: null,
       timelinePosition: null,
       currentTime: null
+    },
+    user: {
+      id: 1,
+      name: '_____ggun'
     }
   },
   getters:{
@@ -89,9 +95,14 @@ export default new Vuex.Store({
         commit('responseSubmitData', response.data);
       });
     },
+    requestRecommendChart: ({commit}) => {
+      ListModel.list().then(data => {
+        commit('responseRecommendChartResult', data);
+      });
+    },
     requestRecommendData: ({commit}) => {
       ListModel.list().then(data => {
-        commit('responseRecommendResult', data);
+        commit('responseRecommendData', data);
       });
     },
     getPreviewURL: ({commit, state}) => {
@@ -148,6 +159,12 @@ export default new Vuex.Store({
       .then((response) => {
         commit('changePlayerDataURL', {url: response.data.http_mp3_128_url, index: index});
       });
+    },
+    editPlaylist: ({dispatch, commit, state}, index) => {
+      commit('deletePlayList', index);
+      if(index === state.playerIndex && state.ownListData.length) {
+        dispatch('getPlayerURL', 0);
+      }
     }
   },
   mutations: {
@@ -161,6 +178,7 @@ export default new Vuex.Store({
         state.searchResult = [];
         state.selectedSearchResultItem = [];
         state.playerIndex = 0;
+        state.playlistEdit = '편집';
       }
     },
     onClickSearchInput: (state, inputELement) => {
@@ -171,6 +189,7 @@ export default new Vuex.Store({
       state.searchResult = state.searchResult.concat(data.collection);
       state.searchNextHref = data.next_href;
       state.playerIndex = 0;
+      state.playlistEdit = '편집';
     },
     onReset: (state) => {
       state.query = '';
@@ -178,6 +197,7 @@ export default new Vuex.Store({
       state.searchResult = [];
       state.selectedSearchResultItem = [];
       state.playerIndex = 0;
+      state.playlistEdit = '편집';
     },
     selectedList: (state, item) => {
       if(state.selectedSearchResultItem.some((val) => val.id === item.id)) {
@@ -186,8 +206,11 @@ export default new Vuex.Store({
         state.selectedSearchResultItem.push(item);
       }
     },
-    responseRecommendResult:(state, data) => {
-      state.listData = data;
+    responseRecommendChartResult:(state, data) => {
+      state.recommendListChart = data;
+    },
+    responseRecommendData: (state, data) => {
+      state.recommendListData = data;
     },
     onClickTab: (state, tabName) => {
       state.selectedTab = tabName;
@@ -205,11 +228,19 @@ export default new Vuex.Store({
     },
     changePlayerDataURL: (state, {url, index}) => {
       state.playerDataURL = url;
+      state.playerIndex = index;
       state.nowPlayingTitle.full = state.ownListData[index].title;
       if(state.nowPlayingTitle.full.length > 35) {
         state.nowPlayingTitle.preview = state.nowPlayingTitle.full.slice(0, 35) + '...';
       } else {
         state.nowPlayingTitle.preview = state.nowPlayingTitle.full;
+      }
+
+      if(state.player.pauseElement.style.display === 'inline-block') {
+        state.player.audio.setAttribute('autoplay', '');
+        state.player.playElement.style.display = 'none';
+      } else {
+        state.player.audio.removeAttribute('autoplay');
       }
       console.log(state.playerDataURL);
     },
@@ -295,9 +326,21 @@ export default new Vuex.Store({
     onClickInfoSettingModal: (state) => {
       window.open(state.settingInfoURL);
     },
-    onClickDeleteSettingModal: (state) => {
-      console.log(state.ownListData.splice(state.settingDeleteIndex, 1));
-      state.showSettingModal = false;
+    togglePlaylistEdit: (state) => {
+      if(state.player.pauseElement.style.display === 'inline-block') {
+        state.player.audio.pause();
+        state.player.playElement.style.display = 'inline-block';
+        state.player.pauseElement.style.display = 'none';
+      }
+
+      state.playlistEdit = state.playlistEdit === '편집' ? '완료' : '편집';
+    },
+    deletePlayList: (state, index) => {
+      state.ownListData.splice(index, 1);
+
+      if(!state.ownListData.length) {
+        state.playlistEdit = '편집';
+      }
     }
   }
 });
