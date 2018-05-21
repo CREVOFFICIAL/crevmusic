@@ -12,11 +12,11 @@ import { mapState } from 'vuex';
 export default {
   props: ['selectedTab'],
   computed: mapState({
-    tabList: state => state.tabList
+    tabList: state => state.tab.list
   }),
   methods: {
     onClickTab(tabName) {
-      this.$store.commit('onClickTab', tabName);
+      this.$store.dispatch('clickTab', tabName);
     }
   }
 }

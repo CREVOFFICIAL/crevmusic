@@ -1,8 +1,8 @@
 <template>
   <div v-if="data.length">
     <ul class="list">
-      <li v-for="(item, index) in data" :key="index"
-          @click="onClickList">
+      <li class="recommend-list" v-for="(item, index) in data" :key="index"
+          @click="onClickList(item)">
         <i class="fas fa-headphones"></i>
         {{item.title}}
         <span class="date">{{item.date}}</span>
@@ -16,15 +16,12 @@
 <script>
 import { mapState } from 'vuex';
 export default {
-  created() {
-    this.$store.dispatch('requestRecommendChart');
-  },
   computed: mapState({
-    data: state => state.recommendListChart
+    data: state => state.recommendData
   }),
   methods: {
-    onClickList: function () {
-      this.$store.dispatch('requestRecommendData');
+    onClickList: function (data) {
+      this.$store.dispatch('getPlaylistData', {data: data.tracks, tabName: '추천 리스트', title: data.title});
     }
   }
 };
@@ -33,5 +30,8 @@ export default {
 .fa-headphones {
   color: hotpink;
   margin-right: 5px;
+}
+.recommend-list {
+  cursor: pointer;
 }
 </style>

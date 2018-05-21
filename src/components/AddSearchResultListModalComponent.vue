@@ -32,14 +32,14 @@ import { mapState } from 'vuex';
 
 export default {
   computed: mapState({
-    item: state => state.selectedSearchResultItem
+    item: state => state.searchResult.selectedData
   }),
   methods: {
     onClickAddModalClose: function () {
-      this.$store.commit('onClickAddModalClose');
+      this.$store.dispatch('closeAddListModal');
     },
     onClickAddList: function () {
-      this.$store.dispatch('checkUndefinedPlayerURL');
+      this.$store.dispatch('checkSelectedPlaylistURL', '나의 리스트');
     }
   }
 };

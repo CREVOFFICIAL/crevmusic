@@ -1,8 +1,8 @@
 <template>
-  <div v-if="listData.length">
+  <div v-if="data.length">
     <div class="own-list-area">
     <ul class="own-list">
-      <li v-for="(item, index) in listData" :key="index" v-bind:class="{nowPlaying: playerTitle === item.title}" @click="onClickOwnListElement(index)">
+      <li v-for="(item, index) in data" :key="index" v-bind:class="{nowPlaying: playerIndex === index}" @click="onClickOwnListElement(index)">
         <div class="numbar-area">
           <span class="number" v-bind:class="playlistEdit === '완료'? 'hide' : 'show'">{{index + 1}}</span>
           <span class="delete" v-bind:class="playlistEdit === '완료'? 'show' : 'hide'" @click.stop="editPlaylist(index)">X</span>
@@ -25,18 +25,17 @@
   </div>
 </template>
 <script>
+
 import { mapState } from 'vuex';
 export default {
-  props: ['listData'],
   computed: mapState({
-    // listData: state => state.ownListData,
-    playerTitle: state => state.nowPlayingTitle.full,
-    ownListName: state => state.ownListName,
-    playlistEdit: state => state.playlistEdit
+    playerIndex: state => state.footerPlayer.index,
+    playlistEdit: state => state.playlistEdit,
+    data: state => state.playlistData
   }),
   methods: {
     onClickSettingButton: function ({url, index}) {
-      this.$store.commit('onClickSettingButton', {url, index});
+      this.$store.dispatch('showSettingModal', {url, index});
     },
     onClickOwnListElement: function (index) {
       this.$store.dispatch('getPlayerURL', index);

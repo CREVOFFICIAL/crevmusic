@@ -38,14 +38,14 @@ export default {
     this.$watch('url', () => {
         this.$refs.player.load()
     });
-    this.$store.commit('updatePlayerObject', this.$refs);
+    this.$store.dispatch('updatePlayerObject', this.$refs);
   },
   computed:{
     title() {
-      return this.$store.state.nowPlayingTitle.preview;
+      return this.$store.state.footerPlayer.title;
     },
     url() {
-      return this.$store.state.playerDataURL;
+      return this.$store.state.footerPlayer.url;
     },
     playingTime() {
       return this.$store.getters.playingTime;
@@ -59,19 +59,19 @@ export default {
       this.$store.dispatch('setPlayerIndex', value);
     },
     onClickPlayButton: function() {
-      this.$store.commit('onClickPlayButton');
+      this.$store.dispatch('togglePlayerPlayButton');
     },
     onClickBackward: function(value) {
       this.$store.dispatch('setPlayerIndex', value);
     },
     timeUpdate: function () {
-      this.$store.commit('timeUpdate');
+      this.$store.dispatch('updatePlayerTime');
     },
     canplayHhrough: function () {
-      this.$store.commit('canplayHhrough');
+      this.$store.dispatch('getPlayerDuration');
     },
     onClickTimeline: function(ev) {
-      this.$store.dispatch('onClickTimeline', ev);
+      this.$store.dispatch('updateTimeline', ev);
     }
   }
 }
