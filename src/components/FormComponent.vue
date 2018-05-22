@@ -1,6 +1,6 @@
 <template>
-  <form @submit.prevent="requestSearchData">
-    <input type="text" ref="searchInput" :value="this.query" @click="onClickSearchInput" @input="updateQuery" placeholder="검색어를 입력하세요" autofocus>
+  <form @submit.prevent="onSubmit">
+    <input type="text" :value="this.query" @input="updateQuery" placeholder="검색어를 입력하세요" autofocus>
     <button v-show="this.query.length" @click="onReset" type="reset" class="btn-reset"></button>
   </form>
 </template>
@@ -13,16 +13,13 @@ export default {
   }),
   methods: {
     updateQuery(ev) {
-      this.$store.commit('updateQuery', ev.target.value);
+      this.$store.dispatch('updateQuery', ev.target.value);
     },
-    requestSearchData() {
-      this.$store.dispatch('requestSearchData');
+    onSubmit() {
+      this.$store.dispatch('getSearchResultData');
     },
     onReset() {
-      this.$store.commit('onReset');
-    },
-    onClickSearchInput() {
-      this.$store.commit('onClickSearchInput', this.$refs.searchInput);
+      this.$store.dispatch('resetQuery');
     }
   }
 }

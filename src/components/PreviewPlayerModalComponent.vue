@@ -59,14 +59,14 @@ export default {
     this.$watch('url', () => {
         this.$refs.player.load()
     });
-    this.$store.commit('updatePlayerModalObject', this.$refs);
+    this.$store.dispatch('updatePreviewPlayerObject', this.$refs);
   },
   computed:{
     data() {
       return this.$store.getters.getPlayerModalData;
     },
     url() {
-      return this.$store.state.playerModalDataURL;
+      return this.$store.state.previewPlayerModal.url;
     },
     playingTime() {
       return this.$store.getters.playingTime;
@@ -77,16 +77,16 @@ export default {
   },
   methods: {
     onClose: function () {
-      this.$store.commit('onClose');
+      this.$store.dispatch('closePreviewPlayer');
     },
     onClickTimeline: function(ev) {
-      this.$store.dispatch('onClickTimeline', ev);
+      this.$store.dispatch('updateTimeline', ev);
     },
     timeUpdate: function () {
-      this.$store.commit('timeUpdate');
+      this.$store.dispatch('updatePlayerTime');
     },
     canplayHhrough: function () {
-      this.$store.commit('canplayHhrough');
+      this.$store.dispatch('getPlayerDuration');
     }
   }
 }

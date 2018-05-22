@@ -40,17 +40,16 @@ import { findClosestParentWithClass, toggleClassList } from '../utils/domUtils.j
 
 export default {
   computed: mapState({
-    searchResult: state => state.searchResult,
-    errorData: state => state.errorData
+    searchResult: state => state.searchResult.data
   }),
   methods: {
     onClickList: function (item, ev) {
       var targetEl = findClosestParentWithClass(ev.target, 'list-area');
       toggleClassList(targetEl, 'selected');
-      this.$store.commit('selectedList', item);
+      this.$store.dispatch('storeSearchResultItem', item);
     },
     onClickPlayerModal: function (index, id) {
-      this.$store.commit('clickedPlayerModal', {index, id});
+      this.$store.dispatch('showPreviewPlayerModal', {index, id});
     },
     scrolling: function (ev) {
       var scrollHeight = ev.target.scrollHeight;
@@ -59,7 +58,7 @@ export default {
 
       if(clientHeight + scrollTop >= scrollHeight) {
         window.scrollTo(0, scrollHeight);
-        this.$store.dispatch('requestSearchNextHrefData');
+        this.$store.dispatch('getNextSearchResultData');
       }
     }
   }

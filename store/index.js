@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
-import SearchResultModel from '../models/SearchResultModel.js';
 import ListModel from '../models/ListModel.js';
 
 Vue.use(Vuex);
@@ -10,29 +9,36 @@ export default new Vuex.Store({
   state: {
     query: '',
     submitted: false,
-    searchResult: [],
-    searchNextHref: null,
-    selectedSearchResultItem: [],
-    playerModalDataIndex: null,
-    playerModalDataId: '',
-    playerModalDataURL: null,
-    playlistEdit: '편집',
-    showAddList: false,
-    playerIndex: 0,
-    playerDataURL: null,
-    nowPlayingTitle: {
-      preview: '',
-      full: '',
+    searchResult: {
+      data: [],
+      nextHref: null,
+      selectedData: []
     },
-    recommendListChart: [],
-    recommendListData: [],
-    ownListData: [],
-    showSettingModal: false,
-    settingInfoURL: '',
-    settingDeleteIndex: null,
-    tabList: ['추천 리스트', '나의 리스트'],
-    selectedTab: '추천 리스트',
-    tracks: {},
+    previewPlayerModal: {
+      index: null,
+      id: '',
+      url: null
+    },
+    show: {
+      addListModal: false,
+      myPlaylist: false,
+      recommendPlaylist: false,
+      settingModal: false
+    },
+    footerPlayer: {
+      index: 0,
+      url: null,
+      title: ''
+    },
+    recommendData: [],
+    playlistData: [],
+    playlistTitle: '',
+    playlistEdit: '편집',
+    settingModalURL: '',
+    tab: {
+      list: ['추천 리스트', '나의 리스트'],
+      selected: '추천 리스트',
+    },
     player: {
       audio: null,
       duration: null,
@@ -45,13 +51,15 @@ export default new Vuex.Store({
       currentTime: null
     },
     user: {
-      id: 1,
-      name: '_____ggun'
+      id: '5b01b014c3bc3567b9ae9c1c',
+      author: '건우',
+      name: '____ggun',
+      title: '졸릴때 듣고 싶은 노래'
     }
   },
   getters:{
     getPlayerModalData: state => {
-      return state.searchResult.find((item, i) => i === state.playerModalDataIndex);
+      return state.searchResult.data.find((item, i) => i === state.previewPlayerModal.index);
     },
     playingTime: state => {
       let startmm = Math.floor(state.player.currentTime / 60);
@@ -82,158 +90,249 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    requestSearchData: ({commit, state}) => {
-      if(state.searchResult.length) {
-        state.searchResult.length = 0;
-      }
-      axios.get(URL + state.query).then((response) => {
-        commit('responseSubmitData', response.data);
-      });
+    updateQuery: ({commit}, inputValue) => {
+      commit('UPDATE_QUERY', inputValue);
     },
-    requestSearchNextHrefData: ({commit, state}) => {
-      axios.get(state.searchNextHref).then((response) => {
-        commit('responseSubmitData', response.data);
-      });
+    resetQuery: ({commit}) => {
+      commit('RESET_QUERY');
     },
-    requestRecommendChart: ({commit}) => {
-      ListModel.list().then(data => {
-        commit('responseRecommendChartResult', data);
-      });
+    getRecommendData: ({commit}) => {
+      axios.get('http://crev.kr:50004/playlists')
+        .then((response) => {
+          commit('STORE_RECOMMEND_DATA', response.data);
+        });
     },
-    requestRecommendData: ({commit}) => {
-      ListModel.list().then(data => {
-        commit('responseRecommendData', data);
-      });
+    backToRecommendList: ({commit}) => {
+      commit('BACK_TO_RECOMMEND_LIST');
+    },
+    storeSearchResultItem: ({commit}, item) => {
+      commit('STORE_SEARCHRESULT_ITEM', item);
     },
     getPreviewURL: ({commit, state}) => {
-      axios.get(`https://api.soundcloud.com/i1/tracks/${state.playerModalDataId}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+      axios.get(`https://api.soundcloud.com/i1/tracks/${state.previewPlayerModal.id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
       .then((response) => {
-        commit('changePlayerModalDataURL', response.data.preview_mp3_128_url);
+        commit('CHANGE_PREVIEW_PLAYER_URL', response.data.preview_mp3_128_url);
       })
       .catch((error) => {
-        console.log(error);
+        alert(`${error}. 다시 시도해주시기 바랍니다.`);
       });
     },
-    onClickTimeline: ({commit, state} , ev) => {
-      commit('getTimelinePosition');
-
-      let newMargLeft = ev.clientX - state.player.timelinePosition;
-
-      if (newMargLeft >= 0 && newMargLeft <= state.player.timelineWidth) {
-        commit('updatePlayHeadStyle', newMargLeft);
-      }
-      if (newMargLeft < 0) {
-        commit('updatePlayHeadStyle', 0);
-      }
-      if (newMargLeft > state.player.timelineWidth) {
-        commit('updatePlayHeadStyle', state.player.timelineWidth);
-      }
-
-      let percent = newMargLeft / state.player.timelineWidth;
-      commit('updateCurrentTime', percent);
+    showPreviewPlayerModal: ({commit}, {index, id}) => {
+      commit('SHOW_PREVIEW_PLAYER_MODAL', {index, id});
     },
-    setPlayerIndex: ({dispatch, commit, state}, index) => {
-      commit('updatePlayerIndex', index);
-      dispatch('getPlayerURL', state.playerIndex);
+    updatePreviewPlayerObject: ({commit}, refs) => {
+      commit('UPDATE_PREVIEW_PLAYER_OBJECT', refs);
     },
-    checkUndefinedPlayerURL: ({commit, state}) => {
+    updatePlayerObject: ({commit}, refs) => {
+      commit('UPDATE_PLAYER_OBJECT', refs);
+    },
+    closePreviewPlayer: ({commit}) => {
+      commit('CLOSE_PREVIEW_PLAYER');
+    },
+    getMylistData: ({commit, dispatch, state}, tabName) => {
+      axios.get(`http://crev.kr:50004/playlists/${state.user.id}`)
+        .then((response) => {
+          dispatch('getPlaylistData', {data: response.data.tracks, tabName: tabName, plylistTitle: undefined});
+        })
+        .catch((error) => {
+          alert(`${error}. 다시 시도해주시기 바랍니다.`);
+        });
+    },
+    getSearchResultData: ({commit, state}) => {
+      if(state.searchResult.data.length) {
+        state.searchResult.data.length = 0;
+      }
+      axios.get(URL + state.query)
+        .then((response) => {
+          commit('STORE_SEARCHRESULT_DATA', response.data);
+        });
+    },
+    getNextSearchResultData: ({commit, state}) => {
+      axios.get(state.searchResult.nextHref)
+        .then((response) => {
+          commit('STORE_SEARCHRESULT_DATA', response.data);
+        });
+    },
+    getPlaylistData: ({commit, state}, {data, tabName, plylistTitle}) => {
+      commit('UPDATE_PLAYLIST_TITLE', plylistTitle);
+      commit('CLEAR_PLAYLIST');
       var compelted = 0;
-      var length = state.ownListData.length;
-      Array.prototype.forEach.call(state.selectedSearchResultItem, (item, index) => {
-        axios.get(`https://api.soundcloud.com/i1/tracks/${item.id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+      var length = state.playlistData.length;
+      Array.prototype.forEach.call(data, (id, index) => {
+        axios.get(`http://api.soundcloud.com/tracks/${id}?client_id=1dff55bf515582dc759594dac5ba46e9`)
         .then((response) => {
           compelted++;
-          if(typeof response.data.http_mp3_128_url === 'undefined') {
-            alert(`해당 ${item.title}은 추가할 수 없습니다.`);
-          } else {
-            commit('pushOwnData', {item, index, length});
+          commit('STORE_PLAYLIST', {data: response.data, index: index, length: length});
+
+          if(data.length === compelted) {
+            commit('DONE_STORE_PLAYLIST', tabName);
           }
-          if(compelted === state.selectedSearchResultItem.length) {
-            commit('completedPushOwnData');
-          }
+        })
+        .catch((error) => {
+          alert(`${error}. 다시 시도해주시기 바랍니다.`);
         });
       });
     },
+    updateTimeline: ({commit, state} , ev) => {
+      commit('GET_TIMELINE_POSITION');
+      let newMargLeft = ev.clientX - state.player.timelinePosition;
+
+      if (newMargLeft >= 0 && newMargLeft <= state.player.timelineWidth) {
+        commit('UPDATE_PLAYER_HEAD_LOCATION', newMargLeft);
+      }
+      if (newMargLeft < 0) {
+        commit('UPDATE_PLAYER_HEAD_LOCATION', 0);
+      }
+      if (newMargLeft > state.player.timelineWidth) {
+        commit('UPDATE_PLAYER_HEAD_LOCATION', state.player.timelineWidth);
+      }
+
+      let percent = newMargLeft / state.player.timelineWidth;
+      commit('UPDATE_CURRENT_TIME', percent);
+    },
+    setPlayerIndex: ({dispatch, commit, state}, index) => {
+      commit('UPDATE_PLAYER_INDEX', index);
+      dispatch('getPlayerURL', state.footerPlayer.index);
+    },
+    updatePlayerTime: ({commit}) => {
+      commit('UPDATE_PLAYER_TIME');
+    },
+    getPlayerDuration: ({commit}) => {
+      commit('GET_PLAYER_DURATION');
+    },
+    togglePlayerPlayButton: ({commit}) => {
+      commit('TOGGLE_PLAYER_PLAY_BUTTON')
+    },
+    checkSelectedPlaylistURL: ({dispatch, state}, tabName) => {
+      var compelted = 0;
+      var length = state.playlistData.length;
+      var data = [];
+      Array.prototype.forEach.call(state.searchResult.selectedData, (item, index) => {
+        axios.get(`https://api.soundcloud.com/i1/tracks/${item.id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+          .then((response) => {
+            compelted++;
+            if(typeof response.data.http_mp3_128_url === 'undefined') {
+              alert(`해당 ${item.title} 데이터는 추가할 수 없습니다.`);
+            } else {
+              data[index] = item.id;
+            }
+
+            if(compelted === state.searchResult.selectedData.length) {
+              axios.post('http://crev.kr:50004/playlists',{
+                author: state.user.name,
+                title: state.user.title,
+                tracks: data.toString()
+              })
+                .then((response) => {
+                  dispatch('getPlaylistData', {data: data, tabName: tabName});
+                })
+                .catch((error) => {
+                   alert(`${error}. 다시 시도해주시기 바랍니다.`);
+                });
+            }
+          });
+      });
+    },
     getPlayerURL: ({commit, state}, index) => {
-      axios.get(`https://api.soundcloud.com/i1/tracks/${state.ownListData[index].id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
+      axios.get(`https://api.soundcloud.com/i1/tracks/${state.playlistData[index].id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
       .then((response) => {
-        commit('changePlayerDataURL', {url: response.data.http_mp3_128_url, index: index});
+        commit('CHANGE_PLAYER_URL', {url: response.data.http_mp3_128_url, index: index});
       });
     },
     editPlaylist: ({dispatch, commit, state}, index) => {
-      commit('deletePlayList', index);
-      if(index === state.playerIndex && state.ownListData.length) {
-        dispatch('getPlayerURL', 0);
+      axios.delete(`http://crev.kr:50004/playlists/${state.playlistData[index].id}`)
+        .then((response) => {
+          commit('DELETE_PLAYLIST', index);
+          if(index === state.footerPlayer.index && state.playlistData.length) {
+            dispatch('getPlayerURL', 0);
+          }
+          console.log(response);
+        })
+        .catch((error) => {
+          alert(`${error}. 다시 시도해주시기 바랍니다.`);
+        });
+    },
+    showSettingModal: ({commit}, {url, index}) => {
+      commit('SHOW_SETTING_MODAL', {url, index});
+    },
+    closeSettingModal: ({commit}) => {
+      commit('CLOSE_SETTING_MODAL')
+    },
+    togglePlaylistEdit: ({commit}) => {
+      commit('TOGGLE_PLAYLIST_EDIT');
+    },
+    openBrower: ({state}) => {
+      window.open(state.settingModalURL);
+    },
+    clickTab: ({dispatch, commit, state}, tabName) => {
+      if(tabName === state.tab.list[1] && state.tab.selected !== tabName) {
+        dispatch('getMylistData', tabName);
       }
+      if(tabName === state.tab.list[0]) {
+        commit('CLEAR_PLAYLIST');
+      }
+      commit('SET_TAB_NAME', tabName);
+    },
+    clickAddListButton: ({commit}) => {
+      commit('CLICK_ADD_LIST_BUTTON');
+    },
+    closeAddListModal: ({commit}) => {
+      commit('CLOSE_ADD_LIST_MODAL');
     }
   },
   mutations: {
-    onClose: state => {
-      state.playerModalDataIndex = null;
+    CLOSE_PREVIEW_PLAYER: state => {
+      state.previewPlayerModal.index = null;
     },
-    updateQuery: (state, inputValue) => {
+    UPDATE_QUERY: (state, inputValue) => {
       state.query = inputValue;
       if(!state.query.length) {
         state.submitted = false;
-        state.searchResult = [];
-        state.selectedSearchResultItem = [];
-        state.playerIndex = 0;
-        state.playlistEdit = '편집';
+        state.searchResult.data = [];
+        state.searchResult.selectedData = [];
+        state.footerPlayer.index = 0;
       }
     },
-    onClickSearchInput: (state, inputELement) => {
-      inputELement.setSelectionRange(0, inputELement.value.length);
-    },
-    responseSubmitData: (state, data) => {
+    STORE_SEARCHRESULT_DATA: (state, data) => {
       state.submitted = true;
-      state.searchResult = state.searchResult.concat(data.collection);
-      state.searchNextHref = data.next_href;
-      state.playerIndex = 0;
+      state.searchResult.data = state.searchResult.data.concat(data.collection);
+      state.searchResult.nextHref = data.next_href;
+      state.footerPlayer.index = 0;
       state.playlistEdit = '편집';
     },
-    onReset: (state) => {
+    RESET_QUERY: (state) => {
       state.query = '';
       state.submitted = false;
-      state.searchResult = [];
-      state.selectedSearchResultItem = [];
-      state.playerIndex = 0;
+      state.searchResult.data = [];
+      state.searchResult.selectedData = [];
+      state.footerPlayer.index = 0;
       state.playlistEdit = '편집';
     },
-    selectedList: (state, item) => {
-      if(state.selectedSearchResultItem.some((val) => val.id === item.id)) {
-        state.selectedSearchResultItem = state.selectedSearchResultItem.filter((val) => val.id !== item.id);
+    STORE_SEARCHRESULT_ITEM: (state, item) => {
+      if(state.searchResult.selectedData.some((val) => val.id === item.id)) {
+        state.searchResult.selectedData = state.searchResult.selectedData.filter((val) => val.id !== item.id);
       } else {
-        state.selectedSearchResultItem.push(item);
+        state.searchResult.selectedData.push(item);
       }
     },
-    responseRecommendChartResult:(state, data) => {
-      state.recommendListChart = data;
+    SET_TAB_NAME: (state, tabName) => {
+      state.tab.selected = tabName;
+      state.footerPlayer.index = 0;
     },
-    responseRecommendData: (state, data) => {
-      state.recommendListData = data;
+    SHOW_PREVIEW_PLAYER_MODAL: (state, {index, id}) => {
+      state.previewPlayerModal.index = index;
+      state.previewPlayerModal.id = id;
     },
-    onClickTab: (state, tabName) => {
-      state.selectedTab = tabName;
-      state.playerIndex = 0;
+    CHANGE_PREVIEW_PLAYER_URL: (state, url) => {
+      state.previewPlayerModal.url = url;
     },
-    clickedPlayerModal: (state, {index, id}) => {
-      state.playerModalDataIndex = index;
-      state.playerModalDataId = id;
-    },
-    onClickAddListButton: (state) => {
-      state.showAddList = true;
-    },
-    changePlayerModalDataURL: (state, url) => {
-      state.playerModalDataURL = url;
-    },
-    changePlayerDataURL: (state, {url, index}) => {
-      state.playerDataURL = url;
-      state.playerIndex = index;
-      state.nowPlayingTitle.full = state.ownListData[index].title;
-      if(state.nowPlayingTitle.full.length > 35) {
-        state.nowPlayingTitle.preview = state.nowPlayingTitle.full.slice(0, 35) + '...';
+    CHANGE_PLAYER_URL: (state, {url, index}) => {
+      state.footerPlayer.url = url;
+      state.footerPlayer.index = index;
+      if(state.playlistData[index].title.length > 35) {
+        state.footerPlayer.title = state.playlistData[index].title.slice(0, 35) + '...';
       } else {
-        state.nowPlayingTitle.preview = state.nowPlayingTitle.full;
+        state.footerPlayer.title = state.playlistData[index].title;
       }
 
       if(state.player.pauseElement.style.display === 'inline-block') {
@@ -242,15 +341,15 @@ export default new Vuex.Store({
       } else {
         state.player.audio.removeAttribute('autoplay');
       }
-      console.log(state.playerDataURL);
+      console.log(state.footerPlayer.url);
     },
-    updatePlayerModalObject: (state, refs) => {
+    UPDATE_PREVIEW_PLAYER_OBJECT: (state, refs) => {
       state.player.audio = refs.player;
       state.player.playHead = refs.playHead;
       state.player.timeline = refs.timeline;
       state.player.timelineWidth = state.player.timeline.offsetWidth - state.player.playHead.offsetWidth;
     },
-    updatePlayerObject: (state, refs) => {
+    UPDATE_PLAYER_OBJECT: (state, refs) => {
       state.player.audio = refs.player;
       state.player.playElement = refs.playElement;
       state.player.pauseElement = refs.pauseElement;
@@ -258,7 +357,7 @@ export default new Vuex.Store({
       state.player.timeline = refs.timeline;
       state.player.timelineWidth = state.player.timeline.offsetWidth - state.player.playHead.offsetWidth;
     },
-    onClickPlayButton: (state) => {
+    TOGGLE_PLAYER_PLAY_BUTTON: (state) => {
       if(state.player.playElement.style.display === 'inline-block') {
         state.player.audio.play();
         state.player.playElement.style.display = 'none';
@@ -269,44 +368,33 @@ export default new Vuex.Store({
         state.player.pauseElement.style.display = 'none';
       }
     },
-    timeUpdate: (state) => {
+    UPDATE_PLAYER_TIME: (state) => {
       let playPercent = state.player.timelineWidth * (state.player.audio.currentTime / state.player.duration);
       state.player.playHead.style.marginLeft = playPercent + "px";
 
       state.player.currentTime = state.player.audio.currentTime;
     },
-    canplayHhrough: (state) => {
+    GET_PLAYER_DURATION: (state) => {
       state.player.duration = state.player.audio.duration;
     },
-    getTimelinePosition: (state) => {
+    GET_TIMELINE_POSITION: (state) => {
       state.player.timelinePosition = state.player.timeline.getBoundingClientRect().left;
     },
-    updatePlayHeadStyle: (state, marginValue) => {
+    UPDATE_PLAYER_HEAD_LOCATION: (state, marginValue) => {
       state.player.playHead.style.marginLeft = marginValue + "px";
     },
-    updateCurrentTime: (state, percent) => {
+    UPDATE_CURRENT_TIME: (state, percent) => {
       state.player.audio.currentTime = state.player.duration * percent;
     },
-    onClickAddModalClose: (state) => {
-      state.showAddList = false;
+    CLOSE_ADD_LIST_MODAL: (state) => {
+      state.show.addListModal = false;
     },
-    completedPushOwnData: (state) => {
-      state.selectedSearchResultItem = [];
-      state.showAddList = false;
-      state.query = '';
-      state.submitted = false;
-      state.searchResult = [];
-      state.selectedTab = '나의 리스트';
-    },
-    pushOwnData: (state, {item, index, length}) => {
-      state.ownListData[index + length] = item;
-    },
-    updatePlayerIndex: (state, index) => {
-      state.playerIndex += index;
-      if(state.playerIndex >= state.ownListData.length) {
-        state.playerIndex = 0;
-      } else if (state.playerIndex < 0) {
-        state.playerIndex = state.ownListData.length - 1;
+    UPDATE_PLAYER_INDEX: (state, index) => {
+      state.footerPlayer.index += index;
+      if(state.footerPlayer.index >= state.playlistData.length) {
+        state.footerPlayer.index = 0;
+      } else if (state.footerPlayer.index < 0) {
+        state.footerPlayer.index = state.playlistData.length - 1;
       }
       if(state.player.pauseElement.style.display === 'inline-block') {
         state.player.audio.setAttribute('autoplay', '');
@@ -315,18 +403,14 @@ export default new Vuex.Store({
         state.player.audio.removeAttribute('autoplay');
       }
     },
-    onClickSettingButton: (state, {url, index}) => {
-      state.settingInfoURL = url;
-      state.settingDeleteIndex = index;
-      state.showSettingModal = true;
+    SHOW_SETTING_MODAL: (state, {url, index}) => {
+      state.settingModalURL = url;
+      state.show.settingModal = true;
     },
-    onClickCloseSettingModal: (state) => {
-      state.showSettingModal = false;
+    CLOSE_SETTING_MODAL: (state) => {
+      state.show.settingModal = false;
     },
-    onClickInfoSettingModal: (state) => {
-      window.open(state.settingInfoURL);
-    },
-    togglePlaylistEdit: (state) => {
+    TOGGLE_PLAYLIST_EDIT: (state) => {
       if(state.player.pauseElement.style.display === 'inline-block') {
         state.player.audio.pause();
         state.player.playElement.style.display = 'inline-block';
@@ -335,12 +419,46 @@ export default new Vuex.Store({
 
       state.playlistEdit = state.playlistEdit === '편집' ? '완료' : '편집';
     },
-    deletePlayList: (state, index) => {
-      state.ownListData.splice(index, 1);
-
-      if(!state.ownListData.length) {
+    DELETE_PLAYLIST: (state, index) => {
+      state.playlistData.splice(index, 1);
+      if(!state.playlistData.length) {
         state.playlistEdit = '편집';
       }
+    },
+    STORE_PLAYLIST: (state, {data, index, length}) => {
+      state.playlistData[index + length] = data;
+    },
+    DONE_STORE_PLAYLIST: (state, tabName) => {
+      state.tab.selected = tabName;
+      state.show.recommendPlaylist = true;
+      state.searchResult.selectedData = [];
+      state.show.addListModal = false;
+      state.query = '';
+      state.submitted = false;
+      state.searchResult.data = [];
+      state.show.myPlaylist = true;
+    },
+    STORE_RECOMMEND_DATA: (state, data) => {
+      state.recommendData = data;
+    },
+    BACK_TO_RECOMMEND_LIST: (state) => {
+      state.show.recommendPlaylist = false;
+      state.show.myPlaylist = false;
+    },
+    CLEAR_PLAYLIST: (state) => {
+      state.playlistData = [];
+      state.show.myPlaylist = false;
+      state.show.recommendPlaylist = false;
+    },
+    UPDATE_PLAYLIST_TITLE: (state, plylistTitle) => {
+      if(typeof plylistTitle !== 'undefined') {
+        state.playlistTitle = plylistTitle;
+      } else {
+        state.playlistTitle = state.user.title;
+      }
+    },
+    CLICK_ADD_LIST_BUTTON: (state) => {
+      state.show.addListModal = true;
     }
   }
 });

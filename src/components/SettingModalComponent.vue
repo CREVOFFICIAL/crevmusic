@@ -21,10 +21,10 @@
 export default {
   methods: {
     onClickCloseSettingModal: function () {
-      this.$store.commit('onClickCloseSettingModal');
+      this.$store.dispatch('closeSettingModal');
     },
     onClickInfoSettingModal: function () {
-      this.$store.commit('onClickInfoSettingModal');
+      this.$store.dispatch('openBrower');
     }
   }
 }
