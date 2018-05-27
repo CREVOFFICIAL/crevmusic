@@ -16,7 +16,7 @@ export default {
 .playlist-description-title-area {
   display: inline-block;
   height: 100%;
-  width: 80%;
+  width: 60%;
 }
 .playlist-description-title-area>p {
   padding: 5px 10px;

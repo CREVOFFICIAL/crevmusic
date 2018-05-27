@@ -121,12 +121,13 @@ input[type=text] {
   font-size: 14px;
   line-height: 1.5;
   border: 1px solid #cccccc;
+  border-radius: 5px;
 }
 .content .result li{
   border-bottom: 1px #ccc solid;
 }
 .content .result li .selected {
-  border-left: 5px solid hotpink;
+  border-left: 5px solid #E95325;
   transition: all 0.3s ease-out;
 }
 .content .user-area {
@@ -162,7 +163,7 @@ input[type=text] {
   font-size:40px
 }
 .content .track-area .player .fas {
-  color: hotpink;
+  color: #E95325;
 }
 .content .track-area .player .btns {
   position: absolute;
@@ -206,7 +207,7 @@ input[type=text] {
   height: 50px;
   bottom: 0;
   text-align: center;
-  background: hotpink;
+  background: #E95325;
 }
 .list-btn-area .btn {
   position: relative;
@@ -226,10 +227,15 @@ ul.tabs {
   box-sizing: border-box;
   border-radius: 5px;
   background-color: #eee;
+}
+.tabs li {
   color: #999;
 }
 .tabs li.active {
-  background-color: hotpink;
+  background-color: #E95325;
+  color: #fff;
+}
+.tabs li.active>a {
   color: #fff;
 }
 .list li {
@@ -238,6 +244,7 @@ ul.tabs {
   padding: 25px;
   border-bottom: 1px solid #ccc;
   position: relative;
+  text-decoration:none;
 }
 .list li .number{
   margin-right: 15px;
@@ -280,7 +287,10 @@ form {
   width: 30%;
   height: 30%;
 }
-
+.playlist-description-area {
+  height: 35px;
+  border-bottom: 1px solid #ccc;
+}
 .player-area {
   background: url('https://i1.sndcdn.com/artworks-000179057945-14v79p-t500x500.jpg') no-repeat center center fixed;
   -webkit-background-size: cover;

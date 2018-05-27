@@ -81,7 +81,7 @@ export default {
   position: fixed;
   width: 100%;
   height: 80px;
-  background: hotpink;
+  background: #E95325;
   bottom: 0;
   padding: 5px;
   text-align: center;

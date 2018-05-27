@@ -115,7 +115,7 @@ export default {
 
 .modal-default-button {
   float: right;
-  background: hotpink;
+  background: #E95325;
   color: #fff;
   font-weight: 100;
   border: none;
@@ -159,6 +159,6 @@ export default {
   height: 10px;
   border-radius: 50%;
   margin-top: -4px;
-  background: hotpink;
+  background: #E95325;
 }
 </style>

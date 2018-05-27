@@ -1,14 +1,11 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
-import ListModel from '../models/ListModel.js';
-
 Vue.use(Vuex);
 const URL = "http://api.soundcloud.com/tracks/?client_id=1dff55bf515582dc759594dac5ba46e9&limit=10&linked_partitioning=1&q=";
 export default new Vuex.Store({
   state: {
     query: '',
-    submitted: false,
     searchResult: {
       data: [],
       nextHref: null,
@@ -21,7 +18,6 @@ export default new Vuex.Store({
     },
     show: {
       addListModal: false,
-      myPlaylist: false,
       recommendPlaylist: false,
       settingModal: false
     },
@@ -51,11 +47,13 @@ export default new Vuex.Store({
       currentTime: null
     },
     user: {
-      id: '5b01b014c3bc3567b9ae9c1c',
-      author: '건우',
-      name: '____ggun',
-      title: '졸릴때 듣고 싶은 노래'
-    }
+      id: null,
+      trackId: '5b06bd03f0b5393a20fe6efd',
+      name: null,
+      img: null,
+      title: ''
+    },
+    loading: false
   },
   getters:{
     getPlayerModalData: state => {
@@ -87,6 +85,9 @@ export default new Vuex.Store({
         endss = `0${endss}`;
       }
       return `${endmm}:${endss}`;
+    },
+    isAuthenticated: state => {
+      return !!localStorage.getItem('token');
     }
   },
   actions: {
@@ -96,14 +97,17 @@ export default new Vuex.Store({
     resetQuery: ({commit}) => {
       commit('RESET_QUERY');
     },
-    getRecommendData: ({commit}) => {
+    getRecommendData: ({commit, dispatch}) => {
       axios.get('http://crev.kr:50004/playlists')
         .then((response) => {
+          setTimeout(() => {
+          }, 1000);
           commit('STORE_RECOMMEND_DATA', response.data);
+        })
+        .catch((error) => {
+          dispatch(getRecommendData);
+          alert(`${error}. 다시 로드하겠습니다.`);
         });
-    },
-    backToRecommendList: ({commit}) => {
-      commit('BACK_TO_RECOMMEND_LIST');
     },
     storeSearchResultItem: ({commit}, item) => {
       commit('STORE_SEARCHRESULT_ITEM', item);
@@ -129,20 +133,25 @@ export default new Vuex.Store({
     closePreviewPlayer: ({commit}) => {
       commit('CLOSE_PREVIEW_PLAYER');
     },
-    getMylistData: ({commit, dispatch, state}, tabName) => {
-      axios.get(`http://crev.kr:50004/playlists/${state.user.id}`)
-        .then((response) => {
-          dispatch('getPlaylistData', {data: response.data.tracks, tabName: tabName, plylistTitle: undefined});
-        })
-        .catch((error) => {
-          alert(`${error}. 다시 시도해주시기 바랍니다.`);
-        });
+    getMylistData: ({commit, dispatch, state}, cb) => {
+      if(state.user.trackId) {
+        axios.get(`http://crev.kr:50004/playlists/${state.user.trackId}`)
+          .then((response) => {
+            dispatch('getPlaylistData', {data: response.data.tracks, title: undefined, cb: cb});
+          })
+          .catch((error) => {
+            alert(`${error}. 다시 시도해주시기 바랍니다.`);
+          });
+      }
     },
-    getSearchResultData: ({commit, state}) => {
+    getSearchResultData: ({commit, state}, q) => {
       if(state.searchResult.data.length) {
         state.searchResult.data.length = 0;
       }
-      axios.get(URL + state.query)
+      if(typeof q !== 'undefined') {
+        commit('UPDATE_QUERY', q);
+      }
+      return axios.get(URL + state.query)
         .then((response) => {
           commit('STORE_SEARCHRESULT_DATA', response.data);
         });
@@ -153,8 +162,9 @@ export default new Vuex.Store({
           commit('STORE_SEARCHRESULT_DATA', response.data);
         });
     },
-    getPlaylistData: ({commit, state}, {data, tabName, plylistTitle}) => {
-      commit('UPDATE_PLAYLIST_TITLE', plylistTitle);
+    getPlaylistData: ({commit, dispatch, state}, {data, title, cb}) => {
+      commit('TURN_ON_LOADING');
+      commit('UPDATE_PLAYLIST_TITLE', title);
       commit('CLEAR_PLAYLIST');
       var compelted = 0;
       var length = state.playlistData.length;
@@ -165,13 +175,23 @@ export default new Vuex.Store({
           commit('STORE_PLAYLIST', {data: response.data, index: index, length: length});
 
           if(data.length === compelted) {
-            commit('DONE_STORE_PLAYLIST', tabName);
+            if(typeof cb !== 'undefined') {
+              cb();
+            }
+
+            commit('TURN_OFF_LOADING');
+            commit('DONE_STORE_PLAYLIST');
           }
         })
         .catch((error) => {
-          alert(`${error}. 다시 시도해주시기 바랍니다.`);
+          commit('TURN_OFF_LOADING');
+          alert('로딩 중 오류가 발생했습니다.');
+          dispatch('getMylistData', {cb});
         });
       });
+    },
+    setRecommendPlaylist:({commit}, isPlaylist) => {
+      commit('SET_RECOMMEND_PLAYLIST', isPlaylist);
     },
     updateTimeline: ({commit, state} , ev) => {
       commit('GET_TIMELINE_POSITION');
@@ -203,10 +223,10 @@ export default new Vuex.Store({
     togglePlayerPlayButton: ({commit}) => {
       commit('TOGGLE_PLAYER_PLAY_BUTTON')
     },
-    checkSelectedPlaylistURL: ({dispatch, state}, tabName) => {
+    checkSelectedPlaylistURL: ({commit, dispatch, state}, cb) => {
       var compelted = 0;
       var length = state.playlistData.length;
-      var data = [];
+      var StoreData = [];
       Array.prototype.forEach.call(state.searchResult.selectedData, (item, index) => {
         axios.get(`https://api.soundcloud.com/i1/tracks/${item.id}/streams?client_id=1dff55bf515582dc759594dac5ba46e9`)
           .then((response) => {
@@ -214,20 +234,25 @@ export default new Vuex.Store({
             if(typeof response.data.http_mp3_128_url === 'undefined') {
               alert(`해당 ${item.title} 데이터는 추가할 수 없습니다.`);
             } else {
-              data[index] = item.id;
+              StoreData[index] = item.id;
             }
 
             if(compelted === state.searchResult.selectedData.length) {
-              axios.post('http://crev.kr:50004/playlists',{
-                author: state.user.name,
-                title: state.user.title,
-                tracks: data.toString()
+              console.log(StoreData.toString());
+              return axios({
+                method: 'PUT',
+                url: `http://crev.kr:50004/playlists/${state.user.trackId}`,
+                data: {
+                  tracks: StoreData.toString(),
+                  methods: 'add'
+                }
               })
-                .then((response) => {
-                  dispatch('getPlaylistData', {data: data, tabName: tabName});
+                .then((data) => {
+                  dispatch('allClear');
+                  cb();
                 })
                 .catch((error) => {
-                   alert(`${error}. 다시 시도해주시기 바랍니다.`);
+                    alert(`${error}. 다시 시도해주시기 바랍니다.`);
                 });
             }
           });
@@ -240,13 +265,19 @@ export default new Vuex.Store({
       });
     },
     editPlaylist: ({dispatch, commit, state}, index) => {
-      axios.delete(`http://crev.kr:50004/playlists/${state.playlistData[index].id}`)
+      axios({
+        method: 'PUT',
+        url: `http://crev.kr:50004/playlists/${state.user.trackId}`,
+        data: {
+          ids: index.toString(),
+          methods: 'remove'
+        }
+      })
         .then((response) => {
           commit('DELETE_PLAYLIST', index);
           if(index === state.footerPlayer.index && state.playlistData.length) {
             dispatch('getPlayerURL', 0);
           }
-          console.log(response);
         })
         .catch((error) => {
           alert(`${error}. 다시 시도해주시기 바랍니다.`);
@@ -265,12 +296,6 @@ export default new Vuex.Store({
       window.open(state.settingModalURL);
     },
     clickTab: ({dispatch, commit, state}, tabName) => {
-      if(tabName === state.tab.list[1] && state.tab.selected !== tabName) {
-        dispatch('getMylistData', tabName);
-      }
-      if(tabName === state.tab.list[0]) {
-        commit('CLEAR_PLAYLIST');
-      }
       commit('SET_TAB_NAME', tabName);
     },
     clickAddListButton: ({commit}) => {
@@ -278,6 +303,36 @@ export default new Vuex.Store({
     },
     closeAddListModal: ({commit}) => {
       commit('CLOSE_ADD_LIST_MODAL');
+    },
+    allClear: ({commit}) => {
+      commit('ALLCLEAR');
+    },
+    setUserObject: ({commit}, {data}) => {
+      commit('SET_USER_OBJECT', {data});
+    },
+    updateTrackTitle: ({commit}, title) => {
+      commit('UPDATE_TRACK_TITLE', title);
+    },
+    addUserTrack: ({commit, state}) => {
+      axios({
+        method: 'POST',
+        url: 'http://crev.kr:50004/playlists',
+        data: {
+          // 임시 트랙 아이디
+          tracks: '198656805',
+          title: state.user.title
+        }
+      })
+        .then((data) => {
+          // 나중에 트랙아이디를 현재 로그인된 아이디의 trackid에 저장
+          // 현재는 테스트를 위해 dispatch부분에서 state값을 수정함.
+          state.user.trackId = data._id;
+          commit('SET_TAB_NAME', '추천 리스트');
+          alert('등록완료!');
+        })
+        .catch((error) => {
+            alert(`${error}. 다시 시도해주시기 바랍니다.`);
+        });
     }
   },
   mutations: {
@@ -287,14 +342,11 @@ export default new Vuex.Store({
     UPDATE_QUERY: (state, inputValue) => {
       state.query = inputValue;
       if(!state.query.length) {
-        state.submitted = false;
         state.searchResult.data = [];
         state.searchResult.selectedData = [];
-        state.footerPlayer.index = 0;
       }
     },
     STORE_SEARCHRESULT_DATA: (state, data) => {
-      state.submitted = true;
       state.searchResult.data = state.searchResult.data.concat(data.collection);
       state.searchResult.nextHref = data.next_href;
       state.footerPlayer.index = 0;
@@ -302,10 +354,8 @@ export default new Vuex.Store({
     },
     RESET_QUERY: (state) => {
       state.query = '';
-      state.submitted = false;
       state.searchResult.data = [];
       state.searchResult.selectedData = [];
-      state.footerPlayer.index = 0;
       state.playlistEdit = '편집';
     },
     STORE_SEARCHRESULT_ITEM: (state, item) => {
@@ -428,27 +478,20 @@ export default new Vuex.Store({
     STORE_PLAYLIST: (state, {data, index, length}) => {
       state.playlistData[index + length] = data;
     },
-    DONE_STORE_PLAYLIST: (state, tabName) => {
-      state.tab.selected = tabName;
-      state.show.recommendPlaylist = true;
+    DONE_STORE_PLAYLIST: (state) => {
       state.searchResult.selectedData = [];
       state.show.addListModal = false;
       state.query = '';
-      state.submitted = false;
       state.searchResult.data = [];
-      state.show.myPlaylist = true;
     },
     STORE_RECOMMEND_DATA: (state, data) => {
       state.recommendData = data;
-    },
-    BACK_TO_RECOMMEND_LIST: (state) => {
-      state.show.recommendPlaylist = false;
-      state.show.myPlaylist = false;
+      Array.prototype.forEach.call(state.recommendData, function (item) {
+        item.date = item.date.slice(5,10);
+      });
     },
     CLEAR_PLAYLIST: (state) => {
       state.playlistData = [];
-      state.show.myPlaylist = false;
-      state.show.recommendPlaylist = false;
     },
     UPDATE_PLAYLIST_TITLE: (state, plylistTitle) => {
       if(typeof plylistTitle !== 'undefined') {
@@ -459,6 +502,33 @@ export default new Vuex.Store({
     },
     CLICK_ADD_LIST_BUTTON: (state) => {
       state.show.addListModal = true;
+    },
+    SET_RECOMMEND_PLAYLIST: (state, isPlaylist) => {
+      if(typeof isPlaylist !== 'undefined') {
+        state.show.recommendPlaylist = isPlaylist;
+      }
+    },
+    TURN_ON_LOADING: (state) => {
+      state.loading = true;
+    },
+    TURN_OFF_LOADING: (state) => {
+      state.loading = false;
+    },
+    ALLCLEAR: (state) => {
+      state.query = '';
+      state.searchResult.data = [];
+      state.searchResult.selectedData = [];
+      state.footerPlayer.index = 0;
+      state.playlistEdit = '편집';
+      state.tab.selected = '추천 리스트';
+    },
+    SET_USER_OBJECT: (state, {data}) => {
+      state.user.name = data.properties.nickname;
+      state.user.img = data.properties.profile_image;
+      state.user.id = data.id;
+    },
+    UPDATE_TRACK_TITLE: (state, title) => {
+      state.user.title = title;
     }
   }
 });

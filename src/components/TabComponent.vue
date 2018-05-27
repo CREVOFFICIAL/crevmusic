@@ -16,8 +16,18 @@ export default {
   }),
   methods: {
     onClickTab(tabName) {
-      this.$store.dispatch('clickTab', tabName);
+      if(tabName === '추천 리스트') {
+        this.$store.dispatch('clickTab', tabName);
+      } else {
+        this.$store.dispatch('getMylistData', () => {
+          this.$store.dispatch('clickTab', tabName);
+          this.$router.replace('/main/list');
+        });
+      }
     }
   }
 }
 </script>
+<style>
+</style>
+

@@ -12,7 +12,7 @@ export default {
   },
   methods: {
     onClickButton: function () {
-      this.$store.dispatch('backToRecommendList');
+      this.$router.back();
     }
   }
 }
@@ -28,7 +28,7 @@ export default {
 .recommend-playlist-btn-area>button {
   padding: 5px 10px;
   border: none;
-  background: hotpink;
+  background: #E95325;
   color: white;
   border-radius: 5px;
   font-weight: 100;
