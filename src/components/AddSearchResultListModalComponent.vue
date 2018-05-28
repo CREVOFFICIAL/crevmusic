@@ -39,7 +39,7 @@ export default {
       this.$store.dispatch('closeAddListModal');
     },
     onClickAddList: function () {
-      this.$store.dispatch('checkSelectedPlaylistURL', '나의 리스트');
+      this.$store.dispatch('checkSelectedPlaylistURL', () => this.$router.replace('/main/list'));
     }
   }
 };
@@ -65,7 +65,7 @@ export default {
   height: 30px;
   border-radius: 5px;
   border: none;
-  background: hotpink;
+  background: #E95325;
   color: #fff;
   font-weight: 100;
   font-size: 1.0rem;

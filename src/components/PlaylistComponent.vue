@@ -1,5 +1,5 @@
 <template>
-  <div v-if="data.length">
+<div v-if="data.length">
     <div class="own-list-area">
     <ul class="own-list">
       <li v-for="(item, index) in data" :key="index" v-bind:class="{nowPlaying: playerIndex === index}" @click="onClickOwnListElement(index)">
@@ -19,10 +19,15 @@
       </li>
     </ul>
     </div>
-  </div>
-  <div v-else>
-    <span>현재 리스트 목록이 없습니다</span>
-  </div>
+</div>
+<div v-else>
+<div class="track-title-form-area">
+  <form @submit.prevent="onSubmitAddTrackBtn">
+  <input type="text" :value="trackTitle" @input="updateTrackTitle" placeholder="트랙 타이틀을 입력해주세요">
+  <button type="submit">등록</button>
+  </form>
+</div>
+</div>
 </template>
 <script>
 
@@ -31,7 +36,8 @@ export default {
   computed: mapState({
     playerIndex: state => state.footerPlayer.index,
     playlistEdit: state => state.playlistEdit,
-    data: state => state.playlistData
+    data: state => state.playlistData,
+    trackTitle: state => state.user.title
   }),
   methods: {
     onClickSettingButton: function ({url, index}) {
@@ -42,6 +48,12 @@ export default {
     },
     editPlaylist: function (index) {
       this.$store.dispatch('editPlaylist', index);
+    },
+    onSubmitAddTrackBtn: function () {
+      this.$store.dispatch('addUserTrack');
+    },
+    updateTrackTitle: function (ev) {
+      this.$store.dispatch('updateTrackTitle', ev.target.value);
     }
   }
 }
@@ -145,5 +157,26 @@ export default {
 .own-list-area {
     height: 63.5vh;
   }
+}
+.track-title-form-area {
+  text-align: center;
+  padding: 10px;
+}
+.track-title-form-area input {
+  width: 90%;
+  margin: 0 auto;
+  border-radius: 5px;
+}
+.track-title-form-area button {
+  margin: 15px 0 15px 0;
+  padding: 10px 15px;
+  width: 90%;
+  border: none;
+  background: #E95325;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 5px;
+  font-weight: 100;
+  letter-spacing: 5px;
 }
 </style>
