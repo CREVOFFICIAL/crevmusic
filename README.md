@@ -1,5 +1,5 @@
 ## CREVMUSIC
->  Web-based customized sound cloud player
+>  customized sound cloud player
 
 ### Web-frontend
 - Geon-wooBryanKim (https://github.com/Geon-wooBryanKim)
